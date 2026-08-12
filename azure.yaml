@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: governed-agent-demo
+
+requiredVersions:
+  extensions:
+    azure.ai.agents: ">=1.0.0-beta.4"
+
+hooks:
+  preprovision:
+    shell: pwsh
+    run: ./scripts/foundry-preflight.ps1 -Phase Provision
+    continueOnError: false
+  predeploy:
+    shell: pwsh
+    run: ./scripts/foundry-preflight.ps1 -Phase Deploy
+    continueOnError: false
+
+services:
+  foundry-project:
+    host: azure.ai.project
+    endpoint: ${AZURE_AI_PROJECT_ENDPOINT}
+
+  governed-agent-host:
+    host: azure.ai.agent
+    kind: hosted
+    name: governed-agent-host
+    displayName: Governed Agent Host
+    description: Governed incident-response agent with a deterministic plan verifier.
+    project: .
+    language: docker
+    uses:
+      - foundry-project
+    protocols:
+      - protocol: invocations
+        version: 2.0.0
+    docker:
+      context: .
+      path: deploy/foundry/Dockerfile
+    container:
+      resources:
+        cpu: "1"
+        memory: 2Gi
+    environmentVariables:
+      - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
+        value: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+
+infra:
+  provider: microsoft.foundry
