@@ -67,6 +67,19 @@ Implementation remains blocked until a later spike confirms:
 
 If the gate fails, use Microsoft Agent Framework Harness as the inner loop while retaining the same tools, gateway, governance, proofs, approval, telemetry, and console.
 
+### Local spike result
+
+The initial .NET spike on Windows established the static integration shape:
+
+- `GitHub.Copilot.SDK` 1.0.9 and `Microsoft.Agents.AI.GitHub.Copilot` 1.17.0 compile on .NET 10.
+- `CopilotClientMode.Empty`, an explicit custom-tool allowlist, built-in and MCP exclusions, disabled ambient discovery, a rejecting permission handler, and a default-deny `OnPreToolUse` hook can be configured together.
+- The configured client can be exposed as a Microsoft Agent Framework `AIAgent`.
+- Local conformance tests show that the write-shaped spike tool is denied before application handler dispatch.
+
+The live Windows invocation is currently blocked before session creation by an upstream SDK/CLI wire-format mismatch. The SDK-pinned Windows CLI returns the `ping.timestamp` field as Unix milliseconds, while the .NET SDK deserializes it as an RFC 3339 `DateTimeOffset`. This is the same cross-platform compatibility class tracked in `github/copilot-sdk#1356`. The application does not shim or bypass the protocol check.
+
+This finding does not accept or reject the ADR. Foundry Hosted Agents use a Linux runtime, so the hosted feasibility gate must test the SDK-pinned Linux CLI before the inner-loop decision is made. The local demo must use Agent Framework Harness or an upstream-fixed SDK/CLI pair unless that test also establishes a supported local Copilot runtime.
+
 ## Alternatives considered
 
 ### Agent Framework Harness only
@@ -88,3 +101,4 @@ Rejected because it risks duplicate tool execution, conflicting state, ambiguous
 - [Microsoft Agent Framework integration](https://docs.github.com/copilot/how-tos/copilot-sdk/integrations/microsoft-agent-framework)
 - [Microsoft Agent Framework GitHub Copilot integration](https://learn.microsoft.com/agent-framework/integrations/by-component/agent-services/github-copilot)
 - [Agentic Loop reference](https://agentic-loop-geguehdxa0c0h4bx.b02.azurefd.net/concepts/platform)
+- [SDK timestamp compatibility issue](https://github.com/github/copilot-sdk/issues/1356)

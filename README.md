@@ -24,6 +24,16 @@ The current foundation builds without Azure resources. Azure and Microsoft
 Foundry environment selection is intentionally deferred until the hosted-agent
 feasibility phase.
 
+The local Copilot integration spike can be invoked with:
+
+```powershell
+dotnet run --project .\src\GovernedAgent.Host -- --copilot-spike
+```
+
+On Windows, the current SDK-pinned CLI is blocked by the upstream timestamp
+wire-format issue recorded in ADR 0001. The application fails rather than
+weakening or bypassing the SDK protocol check.
+
 ## Repository structure
 
 - `src/GovernedAgent.Core` - canonical plans, actions, approvals, decisions, and audit contracts.

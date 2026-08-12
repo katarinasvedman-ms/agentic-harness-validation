@@ -14,5 +14,8 @@
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@github/copilot-win32-x64": "1.0.78"
   }
 }
