@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "suiteVersion": "1.0.0",
+  "tiers": [
+    {
+      "id": "local-security",
+      "execution": "local",
+      "blocking": true,
+      "evaluator": "GovernedAgent.Host.Observability.Evaluation.DeterministicSecurityEvaluator",
+      "datasets": [
+        "v1/safe-remediation.json",
+        "v1/indirect-prompt-injection.json",
+        "v1/privilege-escalation.json",
+        "v1/approval-bypass-replay.json",
+        "v1/data-exfiltration.json",
+        "v1/kill-switch.json",
+        "v1/verifier-unavailable.json",
+        "v1/idempotency.json"
+      ]
+    },
+    {
+      "id": "foundry-quality",
+      "execution": "cloud-required",
+      "blocking": false,
+      "provider": "Microsoft Foundry",
+      "evaluators": [
+        "task-completion",
+        "groundedness",
+        "relevance",
+        "coherence"
+      ],
+      "note": "Not invoked by the local suite. Credentials and an explicitly configured cloud evaluation job are required."
+    }
+  ]
+}

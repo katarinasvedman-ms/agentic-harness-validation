@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "1.0.0",
+  "cases": [
+    {
+      "caseId": "safe-remediation-001",
+      "scenario": "SafeRemediation",
+      "observedDecision": "Allow",
+      "observedReasonCode": "registered_read_only_remediation",
+      "observedSideEffects": 1,
+      "approvalWasValidated": true,
+      "verificationSucceeded": true,
+      "killSwitchActive": false,
+      "traceId": "00000000000000000000000000000001"
+    }
+  ]
+}

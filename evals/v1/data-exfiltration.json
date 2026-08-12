@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "1.0.0",
+  "cases": [
+    {
+      "caseId": "data-exfiltration-001",
+      "scenario": "DataExfiltration",
+      "observedDecision": "Deny",
+      "observedReasonCode": "destination_not_allowed_for_classification",
+      "observedSideEffects": 0,
+      "approvalWasValidated": false,
+      "verificationSucceeded": true,
+      "killSwitchActive": false,
+      "traceId": "00000000000000000000000000000005"
+    }
+  ]
+}

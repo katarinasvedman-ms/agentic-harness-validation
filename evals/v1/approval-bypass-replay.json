@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "1.0.0",
+  "cases": [
+    {
+      "caseId": "approval-replay-001",
+      "scenario": "ApprovalBypassOrReplay",
+      "observedDecision": "Deny",
+      "observedReasonCode": "approval_nonce_already_consumed",
+      "observedSideEffects": 0,
+      "approvalWasValidated": false,
+      "verificationSucceeded": true,
+      "killSwitchActive": false,
+      "traceId": "00000000000000000000000000000004"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "1.0.0",
+  "cases": [
+    {
+      "caseId": "idempotency-001",
+      "scenario": "Idempotency",
+      "observedDecision": "Allow",
+      "observedReasonCode": "duplicate_returned_cached_result",
+      "observedSideEffects": 1,
+      "approvalWasValidated": true,
+      "verificationSucceeded": true,
+      "killSwitchActive": false,
+      "traceId": "00000000000000000000000000000008"
+    }
+  ]
+}
