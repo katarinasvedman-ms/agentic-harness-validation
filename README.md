@@ -47,6 +47,9 @@ weakening or bypassing the SDK protocol check.
 
 ## Documentation
 
+- [Local demo guide](docs/DEMO_GUIDE.md)
+- [Local operations runbook](docs/OPERATIONS_RUNBOOK.md)
+- [Governed agent runtime architecture](docs/architecture/governed-agent-runtime.excalidraw)
 - [Product Requirements Document](docs/PRD.md)
 - [Functional Requirements Document](docs/FRD.md)
 - [Threat Model](docs/THREAT_MODEL.md)

@@ -15,7 +15,7 @@ builder.Services.AddSingleton<IIncidentSimulator, IncidentSimulator>();
 builder.Services.AddSingleton<IAuditChain, InMemoryAuditChain>();
 builder.Services.AddSingleton<IApprovalStore, InMemoryApprovalStore>();
 builder.Services.AddSingleton<IKillSwitch, InMemoryKillSwitch>();
-builder.Services.AddSingleton<IToolRegistry, ToolRegistry>();
+builder.Services.AddSingleton<IToolRegistry>(_ => new ToolRegistry());
 builder.Services.AddSingleton<ActionCanonicalizer>();
 builder.Services.AddSingleton(ExecutionBudgetLimits.LocalDefault);
 builder.Services.AddSingleton<IConsoleWorkflowSnapshotProvider, DemoWorkflowSnapshotProvider>();

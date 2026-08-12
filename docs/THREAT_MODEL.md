@@ -646,6 +646,47 @@ The MVP MUST include automated tests for:
 - Proof scope and residual risk are visible in the demo.
 - Copilot loop, Agent Framework composition, and gateway responsibilities are not duplicated or conflated.
 
+### 10.1 Threat-to-evidence traceability
+
+This table names the local evidence for every misuse case. “Documented” means
+the local package exposes the limitation rather than claiming an external
+control has been exercised.
+
+| Threat | Automated test / evaluation evidence | Rehearsal or review evidence |
+| --- | --- | --- |
+| `TM-01` Direct injection | `FailClosedContractTests.CopilotPreToolPolicy*`; gateway digest/argument mutation tests | Layered control evidence only; live model prompt trial remains unproven |
+| `TM-02` Indirect injection | `IncidentSimulatorTests.SeededScenarioContainsDegradedInstanceAndUntrustedInjection`; deterministic fixture evaluation and redaction tests | API evidence has `containsUntrustedContent=true`; diagnostic read remains side-effect free |
+| `TM-03` Unauthorized tool | `HostedProtocolTests.UnknownActionIsRejected`; `FailClosedContractTests.CopilotSessionExposesOnlyApplicationOwnedTools` | Architecture allowlist boundary |
+| `TM-04` Unsafe arguments | `GovernedGatewayTests.UnknownArgumentsAreDeniedBeforeApprovalOrSideEffect`; `RestartServiceRequiresTrustedResourceBinding` | Exact-action demo narrative |
+| `TM-05` Delegation escalation | Verifier corpus and `INV-12`; MVP has no delegation path | Verification spec exclusion/review |
+| `TM-06` Approval bypass | `ProductionWriteWaitsForExactApprovalWithoutSideEffect`; `GatewayDeniesWriteEvenWhenHookLayerIsBypassed` | Production-write suspension checklist |
+| `TM-07` Approval tamper/replay | `WrongApprovalDoesNotResumeOrChangeSimulator`; `ApprovalRemainsSingleUseAcrossResumeAttempts`; `ConsumedApprovalCannotBeReplayed` | Wrong-role and replay API denial |
+| `TM-08` Allowed-sink exfiltration | Unsafe plan verifier corpus; security evaluator indirect-injection case | No general outbound tool; residual-risk statement |
+| `TM-09` Covert exfiltration | `BudgetFailsClosedAfterConfiguredToolCalls`; destination/flow verifier corpus | Documented residual risk; no unrestricted sink |
+| `TM-10` Policy bypass | `GatewayDeniesWriteEvenWhenHookLayerIsBypassed`; architecture/conformance tests | Sole gateway boundary diagram |
+| `TM-11` Policy downgrade | `validate-release-workflow.ps1`; policy regression tests | Versioned policy/digest evidence; privileged-insider risk documented |
+| `TM-12` Verification forgery | `ForgedVerificationAttestationFailsClosed`; `DigestMutationIsDeniedBeforeSideEffect` | Plan/verifier version and digest API evidence |
+| `TM-13` Semantic gap | Node/Dafny differential corpus and proof gate | Guarantee report assumptions and exclusions |
+| `TM-14` Specification error | Counterexample, property, and conformance suites | Human review remains required and documented |
+| `TM-15` Tool poisoning/schema drift | `UnknownSecurityRelevantFieldsAreRejected`; `UnknownArgumentsAreDeniedBeforeApprovalOrSideEffect` | Pinned manifests and schema review |
+| `TM-16` Memory poisoning | `CallerSessionRotationDoesNotRotateGovernanceSessionOrBudgetKey`; reset tests | Incident-scoped, volatile local state |
+| `TM-17` Identity spoofing | `CallerControlledTrustedStateIsRejected`; `ResumeTokenIsBoundToTrustedPlatformUser`; BFF role test | Demo headers explicitly labelled non-authentication |
+| `TM-18` Credential disclosure | `PromptAndStructuredPayloadRedactionIsDeterministic`; `ToolResultRedactsSimulatorSystemOverridePayload` | Evidence-sharing warning; managed identity deferred |
+| `TM-19` Audit tampering | `AuditRecordsAreLinkedAndVerifiable`; `ExactApprovalIsOneTimeAndCreatesValidAuditRecord` | Rehearsal asserts `integrityValid=true`; durable storage deferred |
+| `TM-20` Cost exhaustion | `BudgetFailsClosedAfterConfiguredToolCalls`; suspension-store capacity/TTL tests | Estimated cost model and local limits |
+| `TM-21` Cascading failure | `RestartIsIdempotentAndRestorable`; `FreshApprovalAndSameIdempotencyKeyReplaysWithoutDuplicateWrite` | Simulator-only limitation stated |
+| `TM-22` Kill-switch bypass | `KillSwitchOverridesOtherwiseAllowedAction`; `GatewayDeniesWriteEvenWhenHookLayerIsBypassed` | API activates and reads back emergency stop |
+| `TM-23` Evaluation gaming | Versioned local dataset evaluation and baseline/candidate contracts | Held-out production-derived evaluation remains future work |
+| `TM-24` Misleading assurance | Guarantee-report freshness check | `DEMO_GUIDE.md` customer-safe claims |
+| `TM-25` Hook omission | `DeniedWriteDoesNotEnterItsHandler`; pre-tool policy conformance tests | Gateway independently rechecks |
+| `TM-26` Built-in exposure | `CopilotSessionExposesOnlyApplicationOwnedTools`; hosted credential-free smoke | No live Copilot capability claim |
+| `TM-27` CLI/JSON-RPC tampering | Hosted protocol malformed-body/trusted-state tests; pinned-image smoke | Binary/process hardening remains hosted feasibility work |
+| `TM-28` Session leakage | Independent pending-execution and trusted-user resume-token tests | Incident scope and restart cleanup procedure |
+| `TM-29` Loop exhaustion | Budget, cancellation, TTL, and capacity tests | Runbook limits and emergency stop |
+| `TM-30` False completion | `CompletionIsPendingWhenSimulatorGoalIsNotSatisfied`; completion evaluation case | Completion tied to simulator state, not prose |
+| `TM-31` Duplicate orchestration | `FreshApprovalAndSameIdempotencyKeyReplaysWithoutDuplicateWrite`; digest assertions | Diagram assigns one inner-loop owner and one gateway |
+| `TM-32` Hosted incompatibility | `hosted-agent-smoke.ps1` and credential-free Docker smoke | Harness fallback; remote auth/deployment explicitly unproven |
+
 ## 11. Residual risks requiring explicit acceptance
 
 - Model output may be misleading even when actions are safely constrained.
