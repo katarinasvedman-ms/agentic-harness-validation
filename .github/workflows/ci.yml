@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-validation:
+    name: Windows validation
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      NUGET_XMLDOC_MODE: skip
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            deploy/hosted-copilot/package-lock.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-windows-${{ hashFiles('global.json', '.config/dotnet-tools.json', 'Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: |
+            nuget-windows-
+
+      - name: Restore pinned tools and packages
+        shell: pwsh
+        run: |
+          dotnet tool restore
+          npm ci
+
+      - name: Run main validation
+        shell: pwsh
+        run: ./scripts/validate.ps1
+
+  linux-deterministic-security:
+    name: Linux deterministic and security verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      NUGET_XMLDOC_MODE: skip
+      Z3_PATH: ${{ github.workspace }}/.tools/z3-4.12.1-x64-glibc-2.35/bin/z3
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            deploy/hosted-copilot/package-lock.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-linux-${{ hashFiles('global.json', '.config/dotnet-tools.json', 'Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: |
+            nuget-linux-
+
+      - name: Install pinned Z3
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=".tools/z3-4.12.1-x64-glibc-2.35.zip"
+          mkdir -p .tools
+          curl --fail --location --silent --show-error \
+            --output "${archive}" \
+            "https://github.com/Z3Prover/z3/releases/download/z3-4.12.1/z3-4.12.1-x64-glibc-2.35.zip"
+          echo "c5360fd157b0f861ec8780ba3e51e2197e9486798dc93cd878df69a4b0c2b7c5  ${archive}" |
+            sha256sum --check --strict
+          unzip -q "${archive}" -d .tools
+          rm "${archive}"
+          "${Z3_PATH}" --version | grep -Fx "Z3 version 4.12.1 - 64 bit"
+
+      - name: Restore pinned tools and packages
+        shell: pwsh
+        run: |
+          dotnet tool restore
+          npm ci
+          npm ci --prefix deploy/hosted-copilot
+
+      - name: Run deterministic validation
+        shell: pwsh
+        run: ./scripts/validate.ps1
+
+      - name: Audit locked npm dependencies
+        shell: bash
+        run: |
+          npm audit --audit-level=moderate
+          npm audit --prefix deploy/hosted-copilot --audit-level=moderate
+
+      - name: Build hosted compatibility image
+        shell: bash
+        run: docker build --file deploy/hosted-copilot/Dockerfile --tag governed-agent-hosted-smoke .
+
+      - name: Run credential-free hosted compatibility smoke
+        shell: bash
+        run: docker run --rm --network none governed-agent-hosted-smoke
