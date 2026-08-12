@@ -20,3 +20,7 @@ and availability of the Node verifier.
 This does not prove Hosted Agent authentication, managed identity, scale-to-zero
 resume/session behavior, or platform trace propagation. Those require a real
 Foundry deployment.
+
+Production startup also requires an externally registered, shared
+`IApprovalStore`; the in-memory approval store is limited to Development and
+Testing. A durable Azure approval provider remains deployment work.

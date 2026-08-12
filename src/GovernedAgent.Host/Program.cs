@@ -1,4 +1,6 @@
+using Azure.AI.AgentServer.Core;
 using GovernedAgent.Host.CopilotSpike;
+using GovernedAgent.Host.Hosted;
 
 if (args.Contains("--copilot-spike", StringComparer.Ordinal))
 {
@@ -22,14 +24,19 @@ if (args.Contains("--copilot-spike", StringComparer.Ordinal))
 }
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddGovernedHostedAgent(builder.Configuration);
 var app = builder.Build();
+_ = app.Services.GetRequiredService<GovernedAgent.Governance.IApprovalStore>();
 
-app.UseHttpsRedirection();
+app.UseAgentServerCore();
 app.MapGet("/health", () => Results.Ok(new
 {
     status = "healthy",
     service = "governed-agent-host"
 }));
+app.MapGovernedHostedAgent();
 
 await app.RunAsync();
 return 0;
+
+public partial class Program;

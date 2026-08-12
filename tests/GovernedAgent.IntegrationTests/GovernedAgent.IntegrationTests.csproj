@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
@@ -18,6 +19,33 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\GovernedAgent.Host\GovernedAgent.Host.csproj" />
     <ProjectReference Include="..\..\src\GovernedAgent.Console.Bff\GovernedAgent.Console.Bff.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\src\plan-verifier\dist\cli.js">
+      <Link>Hosted\verifier\cli.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\src\plan-verifier\dist\index.js">
+      <Link>Hosted\verifier\index.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\src\plan-verifier\dist\lattice.js">
+      <Link>Hosted\verifier\lattice.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\src\plan-verifier\dist\plan.js">
+      <Link>Hosted\verifier\plan.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\src\plan-verifier\dist\validator.js">
+      <Link>Hosted\verifier\validator.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\src\plan-verifier\package.json">
+      <Link>Hosted\verifier\package.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

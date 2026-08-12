@@ -4,18 +4,24 @@ namespace GovernedAgent.Governance;
 
 public interface IToolRegistry
 {
+    IReadOnlyCollection<ToolMetadata> Tools { get; }
+
     bool TryGet(string toolName, out ToolMetadata metadata);
 }
 
 public sealed class ToolRegistry : IToolRegistry
 {
     private readonly IReadOnlyDictionary<string, ToolMetadata> _tools;
+    private readonly IReadOnlyCollection<ToolMetadata> _registeredTools;
 
     public ToolRegistry(IEnumerable<ToolMetadata>? tools = null)
     {
         var registrations = tools?.ToArray() ?? CreateDefaultRegistrations();
         _tools = registrations.ToDictionary(tool => tool.Name, StringComparer.Ordinal);
+        _registeredTools = registrations;
     }
+
+    public IReadOnlyCollection<ToolMetadata> Tools => _registeredTools;
 
     public bool TryGet(string toolName, out ToolMetadata metadata)
     {

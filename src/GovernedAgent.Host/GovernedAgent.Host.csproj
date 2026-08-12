@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.AI.AgentServer.Invocations" />
     <PackageReference Include="GitHub.Copilot.SDK" />
     <PackageReference Include="Microsoft.Agents.AI.GitHub.Copilot" />
   </ItemGroup>
@@ -13,5 +14,50 @@
     <ProjectReference Include="..\GovernedAgent.Governance\GovernedAgent.Governance.csproj" />
     <ProjectReference Include="..\GovernedAgent.Simulator\GovernedAgent.Simulator.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\plan-verifier\dist\cli.js">
+      <Link>Hosted\verifier\cli.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\plan-verifier\dist\index.js">
+      <Link>Hosted\verifier\index.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\plan-verifier\dist\lattice.js">
+      <Link>Hosted\verifier\lattice.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\plan-verifier\dist\plan.js">
+      <Link>Hosted\verifier\plan.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\plan-verifier\dist\validator.js">
+      <Link>Hosted\verifier\validator.js</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\plan-verifier\package.json">
+      <Link>Hosted\verifier\package.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <HostedVerifierSource Include="..\plan-verifier\src\**\*.ts" />
+    <HostedVerifierSource Include="..\plan-verifier\package.json;..\plan-verifier\tsconfig.json" />
+  </ItemGroup>
+
+  <Target Name="BuildHostedVerifier"
+          BeforeTargets="AssignTargetPaths"
+          Inputs="@(HostedVerifierSource)"
+          Outputs="$(MSBuildProjectDirectory)\..\plan-verifier\dist\cli.js;$(MSBuildProjectDirectory)\..\plan-verifier\dist\index.js;$(MSBuildProjectDirectory)\..\plan-verifier\dist\lattice.js;$(MSBuildProjectDirectory)\..\plan-verifier\dist\plan.js;$(MSBuildProjectDirectory)\..\plan-verifier\dist\validator.js">
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)\..\plan-verifier" />
+  </Target>
 
 </Project>
