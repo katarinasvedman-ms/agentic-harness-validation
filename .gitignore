@@ -11,6 +11,7 @@ dist/
 
 # Local tools and editors
 .tools/
+.artifacts/
 .idea/
 .vs/
 .vscode/

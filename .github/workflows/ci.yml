@@ -135,3 +135,7 @@ jobs:
       - name: Run credential-free hosted compatibility smoke
         shell: bash
         run: docker run --rm --network none governed-agent-hosted-smoke
+
+      - name: Build production Foundry image without credentials
+        shell: bash
+        run: docker build --file deploy/foundry/Dockerfile --tag governed-agent-foundry-build .

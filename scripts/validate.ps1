@@ -3,6 +3,9 @@ $ErrorActionPreference = "Stop"
 & "$PSScriptRoot\validate-foundry-scaffold.ps1"
 if (-not $?) { throw "The Foundry deployment scaffold is invalid." }
 
+& "$PSScriptRoot\validate-release-workflow.ps1"
+if (-not $?) { throw "The release workflow is invalid." }
+
 dotnet build GovernedAgentDemo.sln --configuration Release
 if ($LASTEXITCODE -ne 0) { throw "The .NET build failed." }
 

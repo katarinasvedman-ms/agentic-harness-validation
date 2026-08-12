@@ -51,5 +51,6 @@ weakening or bypassing the SDK protocol check.
 - [Functional Requirements Document](docs/FRD.md)
 - [Threat Model](docs/THREAT_MODEL.md)
 - [Verification Specification](docs/VERIFICATION_SPEC.md)
+- [Credential-free hosted-agent release](docs/RELEASE_DEPLOYMENT.md)
 - [ADR 0001: GitHub Copilot SDK inner loop](docs/adr/0001-copilot-sdk-inner-loop.md)
 - [Standalone solution pitch](docs/pitch.html)
