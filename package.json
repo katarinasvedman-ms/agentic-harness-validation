@@ -17,5 +17,8 @@
   },
   "devDependencies": {
     "@github/copilot-win32-x64": "1.0.78"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
   }
 }

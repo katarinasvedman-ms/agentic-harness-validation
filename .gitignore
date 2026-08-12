@@ -10,6 +10,7 @@ dist/
 *.tsbuildinfo
 
 # Local tools and editors
+.tools/
 .idea/
 .vs/
 .vscode/

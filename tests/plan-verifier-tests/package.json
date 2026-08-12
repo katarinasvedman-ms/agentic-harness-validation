@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test supported-schema.test.mjs"
+    "test": "node --test *.test.mjs"
   },
   "dependencies": {
     "@governed-agent/plan-verifier": "0.1.0"

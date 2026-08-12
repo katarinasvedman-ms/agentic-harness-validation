@@ -14,3 +14,9 @@ if ($LASTEXITCODE -ne 0) { throw "The frontend or verifier build failed." }
 
 npm test
 if ($LASTEXITCODE -ne 0) { throw "The verifier tests failed." }
+
+& "$PSScriptRoot\verify-proofs.ps1"
+if ($LASTEXITCODE -ne 0) { throw "The formal proofs failed." }
+
+& "$PSScriptRoot\generate-guarantee-report.ps1" -Check
+if ($LASTEXITCODE -ne 0) { throw "The guarantee report is stale." }

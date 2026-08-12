@@ -16,6 +16,7 @@
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "lemmascript": "0.5.19",
     "typescript": "6.0.2"
   }
 }
