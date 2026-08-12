@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\GovernedAgent.Core\GovernedAgent.Core.csproj" />
+  </ItemGroup>
+
+</Project>

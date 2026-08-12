@@ -1,0 +1,6 @@
+@GovernedAgent.Console.Bff_HostAddress = http://localhost:5072
+
+GET {{GovernedAgent.Console.Bff_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
