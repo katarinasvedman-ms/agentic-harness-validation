@@ -1,0 +1,7 @@
+.git
+.github
+**/bin
+**/obj
+**/dist
+node_modules
+TestResults

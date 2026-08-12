@@ -19,6 +19,11 @@ public static class CopilotSpikeConfiguration
             Mode = CopilotClientMode.Empty,
             BaseDirectory = baseDirectory,
             UseLoggedInUser = true,
+            Environment = new Dictionary<string, string>
+            {
+                ["CI"] = "true",
+                ["COPILOT_AUTO_UPDATE"] = "false"
+            },
             Connection = ResolveRuntimeConnection()
         });
     }

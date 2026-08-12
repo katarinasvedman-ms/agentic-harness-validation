@@ -80,6 +80,37 @@ The live Windows invocation is currently blocked before session creation by an u
 
 This finding does not accept or reject the ADR. Foundry Hosted Agents use a Linux runtime, so the hosted feasibility gate must test the SDK-pinned Linux CLI before the inner-loop decision is made. The local demo must use Agent Framework Harness or an upstream-fixed SDK/CLI pair unless that test also establishes a supported local Copilot runtime.
 
+### No-Azure Linux compatibility evidence
+
+`deploy/hosted-copilot` provides a deterministic, credential-free Linux container
+harness. It pins .NET SDK 10.0.400 (satisfying the 10.0.303 baseline), Node.js
+22.22.0, the centrally managed .NET
+packages, and the SDK-matched `@github/copilot-linux-x64` 1.0.78 runtime. The CLI
+is installed read-only and receives both `CI=true` and
+`COPILOT_AUTO_UPDATE=false`.
+
+Locally proven when the Docker smoke passes:
+
+- The solution and TypeScript verifier build on Linux, and the security and
+  Node-verifier integration tests pass there.
+- The native CLI starts as a stdio server without credentials and its entire
+  process group exits after cancellation.
+- The verifier entry point is loadable by pinned Node.js.
+- The compiled configuration retains the default-deny pre-tool hook, excludes
+  built-in and MCP tools, and contains wall-clock, turn, and tool-call budgets.
+- No updater or interactive login is needed for these checks.
+
+Still requiring a real Foundry Hosted Agent deployment:
+
+- Supported non-interactive authentication and managed-identity/token flow.
+- Session isolation and behavior across scale-to-zero/resume.
+- W3C/platform trace propagation across the hosted control plane and child CLI.
+- Enforcement and reporting of model token/credit/cost budgets by the platform.
+- End-to-end live model/tool execution under hosted networking and identity.
+
+This evidence narrows but does not complete the ADR feasibility gate, so the ADR
+remains proposed.
+
 ## Alternatives considered
 
 ### Agent Framework Harness only
