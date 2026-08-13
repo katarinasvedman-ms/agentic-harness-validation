@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GovernedAgent.Core\GovernedAgent.Core.csproj" />
+    <ProjectReference Include="..\..\src\GovernedAgent.Governance\GovernedAgent.Governance.csproj" />
+    <ProjectReference Include="..\..\src\GovernedAgent.Simulator\GovernedAgent.Simulator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Golden\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

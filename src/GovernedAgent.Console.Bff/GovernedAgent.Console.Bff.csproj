@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\GovernedAgent.Core\GovernedAgent.Core.csproj" />
+    <ProjectReference Include="..\GovernedAgent.Governance\GovernedAgent.Governance.csproj" />
+    <ProjectReference Include="..\GovernedAgent.Simulator\GovernedAgent.Simulator.csproj" />
+  </ItemGroup>
+
+</Project>

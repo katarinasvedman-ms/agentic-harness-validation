@@ -1,0 +1,241 @@
+name: Hosted agent release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: hosted-agent-demo
+  cancel-in-progress: false
+
+jobs:
+  release-validation:
+    name: Release validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+      NUGET_XMLDOC_MODE: skip
+      Z3_PATH: ${{ github.workspace }}/.tools/z3-4.12.1-x64-glibc-2.35/bin/z3
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.22.0
+          cache: npm
+
+      - name: Install pinned Z3
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive=".tools/z3-4.12.1-x64-glibc-2.35.zip"
+          mkdir -p .tools
+          curl --fail --location --silent --show-error \
+            --output "${archive}" \
+            "https://github.com/Z3Prover/z3/releases/download/z3-4.12.1/z3-4.12.1-x64-glibc-2.35.zip"
+          echo "c5360fd157b0f861ec8780ba3e51e2197e9486798dc93cd878df69a4b0c2b7c5  ${archive}" |
+            sha256sum --check --strict
+          unzip -q "${archive}" -d .tools
+          rm "${archive}"
+          "${Z3_PATH}" --version | grep -Fx "Z3 version 4.12.1 - 64 bit"
+
+      - name: Restore pinned tools and packages
+        shell: pwsh
+        run: |
+          dotnet tool restore
+          npm ci
+
+      - name: Validate offline Foundry scaffold
+        shell: pwsh
+        run: ./scripts/validate-foundry-scaffold.ps1
+
+      - name: Run deterministic, proof, report, and security validation
+        shell: pwsh
+        run: ./scripts/validate.ps1
+
+      - name: Audit locked npm dependencies
+        shell: bash
+        run: |
+          npm audit --audit-level=moderate
+          npm audit --prefix deploy/hosted-copilot --audit-level=moderate
+
+      - name: Build production image without credentials
+        shell: bash
+        run: |
+          docker build \
+            --file deploy/foundry/Dockerfile \
+            --tag governed-agent-host:release-candidate \
+            .
+
+  deploy-demo:
+    name: Gated demo deployment
+    needs: release-validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: demo
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      AZURE_AI_PROJECT_ENDPOINT: ${{ vars.AZURE_AI_PROJECT_ENDPOINT }}
+      FOUNDRY_PROJECT_ENDPOINT: ${{ vars.AZURE_AI_PROJECT_ENDPOINT }}
+      AZURE_AI_MODEL_DEPLOYMENT_NAME: ${{ vars.AZURE_AI_MODEL_DEPLOYMENT_NAME }}
+      FOUNDRY_NETWORK_POSTURE: ${{ vars.FOUNDRY_NETWORK_POSTURE }}
+      COPILOT_AUTH_STRATEGY: ${{ vars.COPILOT_AUTH_STRATEGY }}
+      COPILOT_AUTH_REVIEWED: ${{ vars.COPILOT_AUTH_REVIEWED }}
+      APPROVAL_STORE_PROVIDER: ${{ vars.APPROVAL_STORE_PROVIDER }}
+      FOUNDRY_PROJECT_MODE: existing
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Set up azd
+        uses: Azure/setup-azd@0b7e3a35ab00f2eee7080c845eb39c3f0ebfa553 # v2
+
+      - name: Sign in to Azure with GitHub OIDC
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install the Foundry azd extension
+        shell: pwsh
+        run: |
+          $env:AZURE_DEV_USER_AGENT = "microsoft_foundry_skill"
+          azd ext install microsoft.foundry
+
+      - name: Authenticate azd with GitHub OIDC
+        shell: pwsh
+        run: |
+          $env:AZURE_DEV_USER_AGENT = "microsoft_foundry_skill"
+          azd auth login `
+            --client-id $env:AZURE_CLIENT_ID `
+            --federated-credential-provider github `
+            --tenant-id $env:AZURE_TENANT_ID
+
+      - name: Configure the existing-project azd environment
+        shell: pwsh
+        run: |
+          $env:AZURE_DEV_USER_AGENT = "microsoft_foundry_skill"
+          azd env new $env:AZURE_ENV_NAME --no-prompt
+          $settings = [ordered]@{
+            FOUNDRY_PROJECT_MODE = "existing"
+            AZURE_CLIENT_ID = $env:AZURE_CLIENT_ID
+            AZURE_TENANT_ID = $env:AZURE_TENANT_ID
+            AZURE_SUBSCRIPTION_ID = $env:AZURE_SUBSCRIPTION_ID
+            AZURE_LOCATION = $env:AZURE_LOCATION
+            AZURE_AI_PROJECT_ENDPOINT = $env:AZURE_AI_PROJECT_ENDPOINT
+            FOUNDRY_PROJECT_ENDPOINT = $env:FOUNDRY_PROJECT_ENDPOINT
+            AZURE_AI_MODEL_DEPLOYMENT_NAME = $env:AZURE_AI_MODEL_DEPLOYMENT_NAME
+            FOUNDRY_NETWORK_POSTURE = $env:FOUNDRY_NETWORK_POSTURE
+            COPILOT_AUTH_STRATEGY = $env:COPILOT_AUTH_STRATEGY
+            COPILOT_AUTH_REVIEWED = $env:COPILOT_AUTH_REVIEWED
+            APPROVAL_STORE_PROVIDER = $env:APPROVAL_STORE_PROVIDER
+          }
+          foreach ($setting in $settings.GetEnumerator()) {
+            $null = azd env set $setting.Key $setting.Value
+            if ($LASTEXITCODE -ne 0) {
+              throw "Unable to configure required azd setting '$($setting.Key)'."
+            }
+          }
+          Write-Host "Configured the existing-project azd environment; values omitted."
+
+      # This is intentionally fail-closed until the shared approval provider and
+      # its connectivity check are implemented. Do not bypass this step.
+      - name: Run phase-aware deployment preflight
+        id: deploy_preflight
+        shell: pwsh
+        run: ./scripts/foundry-preflight.ps1 -Phase Deploy
+
+      - name: Deploy governed-agent-host
+        id: deploy
+        shell: pwsh
+        run: |
+          $env:AZURE_DEV_USER_AGENT = "microsoft_foundry_skill"
+          azd deploy governed-agent-host --no-prompt
+
+      - name: Capture deployed agent status
+        id: status
+        shell: pwsh
+        run: |
+          $env:AZURE_DEV_USER_AGENT = "microsoft_foundry_skill"
+          New-Item -ItemType Directory -Force .artifacts | Out-Null
+          azd ai agent show --no-prompt --output json |
+            Set-Content -Encoding utf8 .artifacts/agent-status.json
+          if ($LASTEXITCODE -ne 0) {
+            throw "Unable to obtain the deployed agent status."
+          }
+
+      - name: Generate strict side-effect-free smoke payload
+        shell: pwsh
+        run: ./scripts/hosted-agent-smoke.ps1 -Mode Generate -Path .artifacts/smoke-request.json
+
+      - name: Require approval without performing a side effect
+        id: smoke
+        shell: pwsh
+        run: |
+          $env:AZURE_DEV_USER_AGENT = "microsoft_foundry_skill"
+          try {
+            azd ai agent invoke governed-agent-host `
+              --protocol invocations `
+              --input-file .artifacts/smoke-request.json `
+              --new-session `
+              --timeout 120 `
+              --output raw *> .artifacts/smoke-response.txt
+            if ($LASTEXITCODE -ne 0) {
+              throw "The hosted smoke invocation failed."
+            }
+            ./scripts/hosted-agent-smoke.ps1 `
+              -Mode Validate `
+              -Path .artifacts/smoke-response.txt
+          }
+          finally {
+            Remove-Item .artifacts/smoke-request.json -ErrorAction SilentlyContinue
+            Remove-Item .artifacts/smoke-response.txt -ErrorAction SilentlyContinue
+          }
+
+  record-run:
+    name: Record release attempt
+    if: ${{ always() }}
+    needs:
+      - release-validation
+      - deploy-demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Create release provenance
+        shell: pwsh
+        env:
+          RELEASE_VALIDATION_OUTCOME: ${{ needs.release-validation.result }}
+          RELEASE_DEPLOY_JOB_OUTCOME: ${{ needs.deploy-demo.result }}
+        run: |
+          ./scripts/new-release-provenance.ps1 `
+            -OutputPath .artifacts/release-provenance.json
+
+      - name: Upload release provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-provenance-${{ github.run_id }}
+          path: .artifacts/release-provenance.json
+          if-no-files-found: error
+          retention-days: 90

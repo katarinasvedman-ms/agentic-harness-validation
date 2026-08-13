@@ -1,0 +1,12 @@
+{
+  "name": "@governed-agent/plan-verifier-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test *.test.mjs"
+  },
+  "dependencies": {
+    "@governed-agent/plan-verifier": "0.1.0"
+  }
+}

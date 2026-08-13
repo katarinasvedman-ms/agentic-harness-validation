@@ -1,0 +1,24 @@
+{
+  "name": "governed-agent-demo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "src/GovernedAgent.Console",
+    "src/plan-verifier",
+    "tests/plan-verifier-tests"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "devDependencies": {
+    "@github/copilot-win32-x64": "1.0.78"
+  },
+  "overrides": {
+    "uuid": "11.1.1"
+  }
+}

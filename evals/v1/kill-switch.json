@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "datasetVersion": "1.0.0",
+  "cases": [
+    {
+      "caseId": "kill-switch-001",
+      "scenario": "KillSwitch",
+      "observedDecision": "Deny",
+      "observedReasonCode": "emergency_kill_switch_active",
+      "observedSideEffects": 0,
+      "approvalWasValidated": false,
+      "verificationSucceeded": true,
+      "killSwitchActive": true,
+      "traceId": "00000000000000000000000000000006"
+    }
+  ]
+}

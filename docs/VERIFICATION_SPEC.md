@@ -81,8 +81,7 @@ The model defines finite or bounded representations of:
 ```text
 Environment = Development | Test | Production
 Effect = Read | Write | Delete
-DataClassification = Public | Internal | Confidential | Restricted
-DestinationClassification = InternalTrusted | ExternalTrusted | PublicUntrusted
+DataClassification = Public | Internal | InternalTrusted | Confidential | Restricted
 Decision = Verified | Rejected | Indeterminate
 ExecutionState =
     Proposed
@@ -285,12 +284,13 @@ For every accepted plan step that transfers modeled data:
 classification(source) <= permittedClassification(destination)
 ```
 
-Specifically:
+The MVP uses one ordered five-level lattice:
 
 ```text
-source in {Confidential, Restricted}
-implies destination != PublicUntrusted
+Public < Internal < InternalTrusted < Confidential < Restricted
 ```
+
+Sources may flow only to destinations at the same or a higher lattice level. A public-untrusted destination is represented by `Public`.
 
 This property follows explicit provenance and destination labels. It does not inspect arbitrary natural-language content.
 

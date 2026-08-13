@@ -1,0 +1,8 @@
+{
+  "name": "governed-agent-hosted-copilot-runtime",
+  "private": true,
+  "version": "0.1.0",
+  "dependencies": {
+    "@github/copilot-linux-x64": "1.0.78"
+  }
+}
