@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic Harness Validation Architecture</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      --paper: #f8fafc;
+      --ink: #172033;
+      --muted: #53657d;
+      --soft: #74839a;
+      --rule: rgba(23, 32, 51, 0.13);
+      --accent: #0078d4;
+      --accent-tint: rgba(0, 120, 212, 0.09);
+      --link: #2563eb;
+      --font-sans: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: "Cascadia Mono", "Segoe UI Mono", Consolas, monospace;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 32px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+    }
+
+    .frame { width: min(1280px, 100%); }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font: 600 11px/1 var(--font-mono);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      color: var(--ink);
+      font: 600 clamp(30px, 4vw, 44px)/1.05 var(--font-sans);
+      letter-spacing: -0.035em;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 980px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <p class="eyebrow">Architecture - Diagram Design</p>
+    <h1>Governed incident-response agent</h1>
+
+    <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="agentic-harness-arch-title agentic-harness-arch-desc">
+      <title id="agentic-harness-arch-title">Governed incident-response agent architecture</title>
+      <desc id="agentic-harness-arch-desc">Architecture diagram showing the entrypoints, agent runtime, deterministic verification, governed tool gateway, governance state, and incident simulator used by the agentic harness validation repository.</desc>
+
+      <defs>
+        <pattern id="arch-dot-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="0.85" fill="rgba(23,32,51,0.09)"/>
+        </pattern>
+        <marker id="arrow-muted" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#53657d"/>
+        </marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#2563eb"/>
+        </marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#0078d4"/>
+        </marker>
+      </defs>
+
+      <rect width="1280" height="720" fill="#f8fafc"/>
+      <rect width="1280" height="720" fill="url(#arch-dot-grid)" opacity="0.45"/>
+
+      <text x="48" y="58" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="24" font-weight="650">Agentic harness validation</text>
+      <text x="48" y="82" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10">balanced architecture view - Microsoft-ish palette - 1280x720</text>
+
+      <!-- Zones -->
+      <rect x="48" y="124" width="244" height="386" rx="10" fill="rgba(23,32,51,0.018)" stroke="rgba(23,32,51,0.12)" stroke-width="1"/>
+      <rect x="112" y="130" width="116" height="16" rx="3" fill="#f8fafc"/>
+      <text x="170" y="142" fill="rgba(23,32,51,0.48)" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.14em">ENTRYPOINTS</text>
+
+      <rect x="332" y="124" width="436" height="386" rx="10" fill="rgba(23,32,51,0.018)" stroke="rgba(23,32,51,0.12)" stroke-width="1"/>
+      <rect x="494" y="130" width="112" height="16" rx="3" fill="#f8fafc"/>
+      <text x="550" y="142" fill="rgba(23,32,51,0.48)" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.14em">AGENT RUNTIME</text>
+
+      <rect x="808" y="124" width="424" height="386" rx="10" fill="rgba(23,32,51,0.018)" stroke="rgba(23,32,51,0.12)" stroke-width="1"/>
+      <rect x="942" y="130" width="156" height="16" rx="3" fill="#f8fafc"/>
+      <text x="1020" y="142" fill="rgba(23,32,51,0.48)" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.14em">GOVERNANCE BOUNDARY</text>
+
+      <!-- Connectors: sparse labels, no loose explanatory text. -->
+      <line x1="244" y1="234" x2="360" y2="234" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arrow-link)"/>
+      <line x1="532" y1="234" x2="568" y2="292" stroke="#53657d" stroke-width="1.2" marker-end="url(#arrow-muted)"/>
+      <path d="M 740,336 H 776 Q 788,336 788,324 V 232 Q 788,216 824,216"
+            fill="none" stroke="#53657d" stroke-width="1.2" marker-end="url(#arrow-muted)"/>
+      <path d="M 740,348 H 780 Q 792,348 792,360 V 372 Q 792,384 824,384"
+            fill="none" stroke="#0078d4" stroke-width="1.6" marker-end="url(#arrow-accent)"/>
+      <line x1="1004" y1="384" x2="1032" y2="384" stroke="#0078d4" stroke-width="1.6" marker-end="url(#arrow-accent)"/>
+      <path d="M 1120,260 V 304 Q 1120,316 1108,316 H 968"
+            fill="none" stroke="#53657d" stroke-width="1.2" marker-end="url(#arrow-muted)"/>
+      <line x1="244" y1="392" x2="360" y2="392" stroke="#2563eb" stroke-width="1.4" marker-end="url(#arrow-link)"/>
+      <path d="M 532,392 H 626 Q 638,392 638,380 V 364"
+            fill="none" stroke="#53657d" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow-muted)"/>
+      <path d="M 532,376 H 780 Q 792,376 792,364 V 216 Q 792,204 824,204"
+            fill="none" stroke="#53657d" stroke-width="1" stroke-dasharray="4,4" marker-end="url(#arrow-muted)"/>
+
+      <!-- Entrypoints -->
+      <g>
+        <rect x="80" y="194" width="164" height="80" rx="8" fill="rgba(23,32,51,0.03)" stroke="rgba(23,32,51,0.32)" stroke-width="1.1"/>
+        <rect x="92" y="206" width="60" height="16" rx="3" fill="transparent" stroke="rgba(23,32,51,0.28)" stroke-width="0.8"/>
+        <text x="122" y="218" fill="#74839a" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">PLATFORM</text>
+        <text x="162" y="244" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">AI Foundry</text>
+        <text x="162" y="262" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">Invocations 2.0</text>
+      </g>
+
+      <g>
+        <rect x="80" y="352" width="164" height="80" rx="8" fill="rgba(83,101,125,0.10)" stroke="#74839a" stroke-width="1.1"/>
+        <rect x="92" y="364" width="34" height="16" rx="3" fill="transparent" stroke="rgba(116,131,154,0.50)" stroke-width="0.8"/>
+        <text x="109" y="376" fill="#74839a" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">UI</text>
+        <text x="162" y="402" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Governance Console</text>
+        <text x="162" y="420" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">React demo UX</text>
+      </g>
+
+      <!-- Agent runtime -->
+      <g>
+        <rect x="360" y="194" width="172" height="80" rx="8" fill="#ffffff" stroke="#172033" stroke-width="1.1"/>
+        <rect x="372" y="206" width="46" height="16" rx="3" fill="transparent" stroke="rgba(23,32,51,0.38)" stroke-width="0.8"/>
+        <text x="395" y="218" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">HOST</text>
+        <text x="446" y="244" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Governed Agent Host</text>
+        <text x="446" y="262" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">.NET 10 service</text>
+      </g>
+
+      <g>
+        <rect x="568" y="292" width="172" height="88" rx="8" fill="#ffffff" stroke="#172033" stroke-width="1.1"/>
+        <rect x="580" y="304" width="46" height="16" rx="3" fill="transparent" stroke="rgba(23,32,51,0.38)" stroke-width="0.8"/>
+        <text x="603" y="316" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">FLOW</text>
+        <text x="654" y="340" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Deterministic Workflow</text>
+        <text x="654" y="358" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">execute / resume</text>
+      </g>
+
+      <g>
+        <rect x="360" y="352" width="172" height="80" rx="8" fill="#ffffff" stroke="#172033" stroke-width="1.1"/>
+        <rect x="372" y="364" width="34" height="16" rx="3" fill="transparent" stroke="rgba(23,32,51,0.38)" stroke-width="0.8"/>
+        <text x="389" y="376" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">BFF</text>
+        <text x="446" y="402" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Console BFF</text>
+        <text x="446" y="420" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">approvals + views</text>
+      </g>
+
+      <!-- Governance boundary -->
+      <g>
+        <rect x="824" y="176" width="180" height="80" rx="8" fill="#ffffff" stroke="#172033" stroke-width="1.1"/>
+        <rect x="836" y="188" width="42" height="16" rx="3" fill="transparent" stroke="rgba(23,32,51,0.38)" stroke-width="0.8"/>
+        <text x="857" y="200" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">NODE</text>
+        <text x="914" y="226" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Plan Verifier CLI</text>
+        <text x="914" y="244" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">TypeScript + Dafny edge</text>
+      </g>
+
+      <g>
+        <rect x="824" y="336" width="180" height="96" rx="8" fill="rgba(0,120,212,0.09)" stroke="#0078d4" stroke-width="1.4"/>
+        <rect x="836" y="348" width="64" height="16" rx="3" fill="transparent" stroke="rgba(0,120,212,0.50)" stroke-width="0.8"/>
+        <text x="868" y="360" fill="#0078d4" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">CONTROL</text>
+        <text x="914" y="386" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Governed Tool Gateway</text>
+        <text x="914" y="404" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">policy + approval + audit</text>
+      </g>
+
+      <g>
+        <rect x="1032" y="180" width="168" height="80" rx="8" fill="rgba(23,32,51,0.05)" stroke="#53657d" stroke-width="1.1"/>
+        <rect x="1044" y="192" width="44" height="16" rx="3" fill="transparent" stroke="rgba(83,101,125,0.52)" stroke-width="0.8"/>
+        <text x="1066" y="204" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="1116" y="228" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Governance State</text>
+        <text x="1116" y="246" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">audit, budget, approvals</text>
+      </g>
+
+      <g>
+        <rect x="1032" y="336" width="168" height="96" rx="8" fill="rgba(23,32,51,0.05)" stroke="#53657d" stroke-width="1.1"/>
+        <rect x="1044" y="348" width="34" height="16" rx="3" fill="transparent" stroke="rgba(83,101,125,0.52)" stroke-width="0.8"/>
+        <text x="1061" y="360" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="8" text-anchor="middle" letter-spacing="0.08em">SIM</text>
+        <text x="1116" y="384" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="15" font-weight="650" text-anchor="middle">Incident Simulator</text>
+        <text x="1116" y="402" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">payments-api</text>
+        <text x="1116" y="418" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="10" text-anchor="middle">metrics, logs, writes</text>
+      </g>
+
+      <!-- Boxed notes, replacing loose bottom text. -->
+      <rect x="48" y="552" width="1184" height="118" rx="10" fill="#ffffff" stroke="rgba(23,32,51,0.12)" stroke-width="1"/>
+      <text x="72" y="584" fill="#53657d" font-family="Cascadia Mono, Consolas, monospace" font-size="9" letter-spacing="0.18em">FIDELITY LEDGER</text>
+
+      <rect x="72" y="604" width="340" height="42" rx="6" fill="rgba(0,120,212,0.06)" stroke="rgba(0,120,212,0.22)" stroke-width="1"/>
+      <text x="92" y="622" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650">Kept</text>
+      <text x="92" y="638" fill="#53657d" font-family="Segoe UI, system-ui, sans-serif" font-size="11">Invocation, verification, exact approval, gateway execution.</text>
+
+      <rect x="468" y="604" width="340" height="42" rx="6" fill="rgba(23,32,51,0.03)" stroke="rgba(23,32,51,0.12)" stroke-width="1"/>
+      <text x="488" y="622" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650">Collapsed</text>
+      <text x="488" y="638" fill="#53657d" font-family="Segoe UI, system-ui, sans-serif" font-size="11">Core contracts, tool registry, stores, audit, budgets, kill switch.</text>
+
+      <rect x="864" y="604" width="340" height="42" rx="6" fill="rgba(23,32,51,0.03)" stroke="rgba(23,32,51,0.12)" stroke-width="1"/>
+      <text x="884" y="622" fill="#172033" font-family="Segoe UI, system-ui, sans-serif" font-size="12" font-weight="650">Dropped</text>
+      <text x="884" y="638" fill="#53657d" font-family="Segoe UI, system-ui, sans-serif" font-size="11">Tests, GitHub Actions, Docker build stages, local Copilot spike.</text>
+    </svg>
+  </main>
+</body>
+</html>
