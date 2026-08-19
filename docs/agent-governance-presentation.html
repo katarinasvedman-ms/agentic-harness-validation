@@ -129,8 +129,10 @@
       font-weight: 700;
     }
     nav a:hover { color: var(--cp-text); }
-    .hero {
+    .hero-section {
       padding: 88px 0 64px;
+    }
+    .hero-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
       gap: 44px;
@@ -585,7 +587,7 @@
       font-size: 18px;
     }
     @media (max-width: 900px) {
-      .hero,
+      .hero-grid,
       .grid-2,
       .grid-3,
       .metric-row,
@@ -629,8 +631,8 @@
   </header>
 
   <main id="top">
-    <section class="hero">
-      <div class="shell hero">
+    <section class="hero-section">
+      <div class="shell hero-grid">
         <div>
           <div class="eyebrow"><span class="eyebrow-dot"></span> Enterprise agent governance</div>
           <h1>Govern <span>10,000 agents</span> without slowing every team down.</h1>
