@@ -554,6 +554,34 @@
       display: block;
       color: var(--cp-text-muted);
     }
+    .recipe-list details {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--cp-border);
+      color: var(--cp-text-muted);
+    }
+    .recipe-list summary {
+      color: var(--cp-link);
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .recipe-list details p {
+      margin: 12px 0 0;
+    }
+    .recipe-list details ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+    .recipe-list details li {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      margin-bottom: 8px;
+    }
+    .recipe-list details a {
+      color: var(--cp-link);
+    }
     .deliverable {
       margin: 18px 0 0;
       padding: 14px 16px;
@@ -1024,14 +1052,99 @@
               <span>Audience: every agent-building team</span>
             </div>
             <ol class="recipe-list">
-              <li><strong>1. Name the accountable owners.</strong><span>Assign a business owner, technical owner, platform owner, security owner, and tool owner role. Publish who approves each risk tier and who responds to incidents.</span></li>
-              <li><strong>2. Define the agent passport.</strong><span>Create the mandatory metadata record: purpose, owner, users, data sources, tools, model/provider, environment, identity, risk tier, evals, guardrails, support contact, and retirement date.</span></li>
-              <li><strong>3. Create a first risk-tier rubric.</strong><span>Classify agents by autonomy, data sensitivity, tool power, external exposure, and business criticality. Keep it simple enough that teams can self-assess.</span></li>
-              <li><strong>4. Inventory known agents and tools.</strong><span>Seed the registry from A365 or your agent catalog, Foundry projects, repositories, Teams apps, Copilot extensions, Power Platform assets, gateway logs, and stakeholder interviews.</span></li>
-              <li><strong>5. Bind every production agent to identity.</strong><span>Require a managed identity or app registration, Entra group ownership, least-privilege permissions, and an access review cadence.</span></li>
-              <li><strong>6. Establish minimum runtime logging.</strong><span>Capture agent identity, user, timestamp, model/provider, data source, tool calls, policy decision, approval decision, errors, latency, and cost.</span></li>
-              <li><strong>7. Publish the first allowed patterns.</strong><span>Document approved starter patterns: knowledge agent, read-only tool agent, approval-based action agent, and prohibited patterns for early rollout.</span></li>
-              <li><strong>8. Start monthly owner attestation.</strong><span>Ask owners to confirm the agent still exists, has the right purpose, uses approved tools, and has no orphaned permissions.</span></li>
+              <li>
+                <strong>1. Name the accountable owners.</strong><span>Assign a business owner, technical owner, platform owner, security owner, and tool owner role. Publish who approves each risk tier and who responds to incidents.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Name owners for every governance object, not only for the agent record. A reusable blueprint can have one owner, while every instantiated agent still needs its own business and technical accountability.</p>
+                  <ul>
+                    <li><strong>Governance team:</strong> executive sponsor, platform owner, security/compliance owner, and operating cadence. Source: <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Build a cloud governance team</a>.</li>
+                    <li><strong>Agent instance / Agent ID:</strong> business owner, technical owner, risk owner, support contact, and escalation path.</li>
+                    <li><strong>Blueprint or template:</strong> blueprint product owner responsible for default controls, docs, evals, versioning, and deprecation.</li>
+                    <li><strong>Identity and access:</strong> Entra app/service principal owner, managed identity owner, security group owner, and RBAC assignment owner. Sources: <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Assign enterprise application owners</a> and <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a>.</li>
+                    <li><strong>Data, tool, and runtime owners:</strong> data owner for each source, tool owner for every callable tool, and platform/runtime owner for the hosting environment.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>2. Define the agent passport.</strong><span>Create the mandatory metadata record: purpose, owner, users, data sources, tools, model/provider, environment, identity, risk tier, evals, guardrails, support contact, and retirement date.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>The passport is the minimum record that lets governance, security, and operations answer who owns the agent, what it can do, and how it is controlled.</p>
+                  <ul>
+                    <li>Include Foundry resource, Foundry project, agent scope, identity, endpoint consumers, and project role assignments. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Role-based access control for Microsoft Foundry</a>.</li>
+                    <li>Include who can chat with or collaborate on the agent when using Copilot Studio. Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Share agents with other users</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>3. Create a first risk-tier rubric.</strong><span>Classify agents by autonomy, data sensitivity, tool power, external exposure, and business criticality. Keep it simple enough that teams can self-assess.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Start with five simple tiers, then refine later. The first goal is consistent routing: self-service for low risk, platform/security approval for higher risk.</p>
+                  <ul>
+                    <li>Use the governance team's risk-management mandate from <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Cloud Adoption Framework governance</a>.</li>
+                    <li>Map risk to the controls in this presentation: identity, RBAC, gateway policy, evals, approvals, logging, and kill switch.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>4. Inventory known agents and tools.</strong><span>Seed the registry from A365 or your agent catalog, Foundry projects, repositories, Teams apps, Copilot extensions, Power Platform assets, gateway logs, and stakeholder interviews.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Combine declared inventory with runtime discovery. A registry tells you what should exist; telemetry and access systems tell you what actually exists.</p>
+                  <ul>
+                    <li>Inventory Foundry resources, projects, agents, agent scopes, and consumers. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC scopes and roles</a>.</li>
+                    <li>Inventory Copilot Studio sharing and collaborator settings. Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Share agents with other users</a>.</li>
+                    <li>Inventory Copilot admin controls where applicable. Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-page">Manage Microsoft Copilot scenarios</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>5. Bind every production agent to identity.</strong><span>Require a managed identity or app registration, Entra group ownership, least-privilege permissions, and an access review cadence.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Every production agent should have a traceable identity and least-privilege access path. Avoid key-based access where identity-based RBAC is available.</p>
+                  <ul>
+                    <li>Assign Entra owners for enterprise applications and service principals. Source: <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Assign enterprise application owners</a>.</li>
+                    <li>Use Foundry roles and scopes for resource, project, and agent endpoint access. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Microsoft Foundry RBAC</a>.</li>
+                    <li>Use managed identities where possible. Source: <a href="https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview">Managed identities for Azure resources</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>6. Establish minimum runtime logging.</strong><span>Capture agent identity, user, timestamp, model/provider, data source, tool calls, policy decision, approval decision, errors, latency, and cost.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Minimum logging should support audit, incident response, cost management, and owner attestation. Log policy decisions as first-class events, not only model prompts.</p>
+                  <ul>
+                    <li>Use Azure Monitor/Application Insights patterns for application telemetry. Source: <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights overview</a>.</li>
+                    <li>Use the governance team's compliance monitoring mandate from <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Cloud Adoption Framework governance</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>7. Publish the first allowed patterns.</strong><span>Document approved starter patterns: knowledge agent, read-only tool agent, approval-based action agent, and prohibited patterns for early rollout.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Patterns should be treated like reusable products: owner, docs, allowed tools, guardrails, evals, version, and known limitations.</p>
+                  <ul>
+                    <li>Base role and access examples on <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry enterprise RBAC mappings</a>.</li>
+                    <li>For Copilot Studio agents, include sharing, collaborator, and security group guidance from <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Share agents with other users</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>8. Start monthly owner attestation.</strong><span>Ask owners to confirm the agent still exists, has the right purpose, uses approved tools, and has no orphaned permissions.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Attestation is the lightweight operating loop that keeps the registry from going stale while automated drift detection matures.</p>
+                  <ul>
+                    <li>Ask owners to confirm purpose, user scope, tool list, data sources, identity, risk tier, support contact, and retirement date.</li>
+                    <li>Use CAF's continuous governance cycle as the operating pattern: monitor, evaluate, update, and report. Source: <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Build a cloud governance team</a>.</li>
+                  </ul>
+                </details>
+              </li>
             </ol>
             <p class="deliverable"><strong>Exit criteria:</strong> a trusted inventory exists, every production agent has an owner and identity, high-risk unknowns are flagged, and new agents cannot go live without a passport.</p>
           </article>
