@@ -388,6 +388,46 @@
       font-size: 13px;
       font-weight: 700;
     }
+    .operating-view {
+      padding: 28px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .operating-view-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .operating-layer {
+      min-height: 168px;
+      padding: 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+    }
+    .operating-layer strong {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--cp-accent);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .operating-layer ul {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--cp-text-muted);
+    }
+    .operating-layer li {
+      margin-bottom: 7px;
+    }
+    .operating-caption {
+      margin: 18px 0 0;
+      color: var(--cp-text-muted);
+      font-size: 15px;
+    }
     .risk-table,
     .stack-table {
       width: 100%;
@@ -658,6 +698,7 @@
       .metric-row,
       .layer,
       .map-grid,
+      .operating-view-grid,
       .persona-grid,
       .recipe-list,
       .roadmap-summary,
@@ -737,6 +778,75 @@
         <div class="bridge">
           <strong>Start with one governed agent, then scale the same controls across the portfolio.</strong>
           Agent 365 gives the estate view, Entra Agent ID makes actions traceable, runtime enforcement controls side effects, observability proves what happened, and reusable patterns make the governed path repeatable.
+        </div>
+      </div>
+    </section>
+
+    <section id="operating-view">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Operating view</div>
+          <h2>One picture for the whole agent governance model.</h2>
+          <p>Use this as the mental model: business accountability sits above the agent control plane, Agent ID gives traceability, runtime enforcement controls side effects, observability shows behavior, and compliance protects data and audit posture.</p>
+        </div>
+        <div class="operating-view" role="img" aria-label="Agent governance operating view across business, control plane, identity, runtime, observability, and compliance layers.">
+          <div class="operating-view-grid">
+            <article class="operating-layer">
+              <strong>Business</strong>
+              <ul>
+                <li>Value</li>
+                <li>Ownership</li>
+                <li>Risk</li>
+                <li>Lifecycle</li>
+              </ul>
+            </article>
+            <article class="operating-layer">
+              <strong>Control plane</strong>
+              <ul>
+                <li>Agent 365</li>
+                <li>Agent Registry</li>
+                <li>Agent Map</li>
+                <li>Catalog</li>
+              </ul>
+            </article>
+            <article class="operating-layer">
+              <strong>Agent identity</strong>
+              <ul>
+                <li>Entra Agent ID</li>
+                <li>Delegation</li>
+                <li>RBAC</li>
+                <li>Revocation</li>
+              </ul>
+            </article>
+            <article class="operating-layer">
+              <strong>Runtime</strong>
+              <ul>
+                <li>Foundry</li>
+                <li>APIM</li>
+                <li>MCP policy</li>
+                <li>Custom enforcement</li>
+              </ul>
+            </article>
+            <article class="operating-layer">
+              <strong>Observability</strong>
+              <ul>
+                <li>Agent 365</li>
+                <li>Defender</li>
+                <li>App Insights</li>
+                <li>Foundry</li>
+              </ul>
+            </article>
+            <article class="operating-layer">
+              <strong>Compliance</strong>
+              <ul>
+                <li>Purview</li>
+                <li>DLP</li>
+                <li>Retention</li>
+                <li>Audit</li>
+              </ul>
+            </article>
+          </div>
+          <p class="operating-caption">The point is not that every agent uses the same runtime. The point is that every agent is governed through the same operating view.</p>
         </div>
       </div>
     </section>
