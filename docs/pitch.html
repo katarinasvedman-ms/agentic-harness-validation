@@ -582,6 +582,7 @@
           <div class="button-row">
             <a class="button" href="#demo">See the demo story <span aria-hidden="true">↓</span></a>
             <a class="button secondary" href="#architecture">Explore the architecture</a>
+            <a class="button secondary" href="agent-governance-presentation.html">View portfolio governance model</a>
           </div>
         </div>
         <aside class="assurance-card" aria-label="Assurance model">
@@ -652,7 +653,7 @@
             <div>
               <span class="scenario-label">Payments API outage</span>
               <h3>The agent helps restore service.</h3>
-              <p>It gathers evidence autonomously, but a production write cannot happen until every deterministic gate agrees.</p>
+              <p>It gathers evidence autonomously, but a production write cannot happen until every deterministic gate agrees. In the portfolio model, this is a <a href="agent-governance-presentation.html#risk">Tier 3 agent</a>: it can perform write actions, so it requires human approval, tool certification, audit, and a kill switch.</p>
             </div>
             <div class="steps">
               <div class="step"><span class="step-icon">1</span><div><strong>Investigate</strong><small>Read metrics, logs, health, and incident context.</small></div><span class="status allow">Allowed</span></div>
@@ -742,7 +743,7 @@
       <div class="shell">
         <div class="section-header">
           <div class="kicker">Technology shape</div>
-          <h2>Microsoft platform capabilities, connected by explicit trust boundaries.</h2>
+          <h2>Microsoft platform capabilities and frontier assurance tools, connected by explicit trust boundaries.</h2>
         </div>
         <figure class="technology-diagram">
           <iframe
@@ -771,20 +772,23 @@
         </div>
         <div class="table-block">
           <h3>Technology stack</h3>
-          <p>The stack table names the frameworks, platforms, and assurance tools behind those boundaries.</p>
+          <p>The stack table names the frameworks, platforms, and assurance tools behind those boundaries. This demo intentionally mixes production Microsoft services with preview and research-stage tools to show the frontier; it is not a blanket deployment recommendation.</p>
           <table class="tech-table">
-            <thead><tr><th>Layer</th><th>Framework or platform</th><th>Role in the solution</th></tr></thead>
+            <thead><tr><th>Layer</th><th>Framework or platform</th><th>Maturity / source</th><th>Role in the solution</th></tr></thead>
             <tbody>
-              <tr><td>Managed runtime</td><td>Microsoft Foundry Hosted Agents / AI Foundry</td><td>Container hosting, endpoint, identity, isolation, scaling, and lifecycle for the hosted agent surface.</td></tr>
-              <tr><td>Inner agentic loop</td><td>GitHub Copilot SDK + Copilot CLI</td><td>Reason-act-observe turns, custom tools, streaming, context, and loop events.</td></tr>
-              <tr><td>Outer composition</td><td>Microsoft Agent Framework on .NET</td><td>Standard agent abstraction, workflow composition, and provider interoperability around the governed host.</td></tr>
-              <tr><td>Runtime governance</td><td>Microsoft Agent Governance Toolkit (AGT)</td><td>Deterministic allow, deny, or approval-required decisions plus audit and operational controls.</td></tr>
-              <tr><td>Formal assurance</td><td>TypeScript, LemmaScript, and Dafny</td><td>Prove selected deterministic plan and state-machine invariants before governed execution.</td></tr>
-              <tr><td>Infrastructure control</td><td>Microsoft Entra ID + Azure RBAC</td><td>Least-privilege identity and the physical limit on reachable operations.</td></tr>
-              <tr><td>Quality and operations</td><td>Foundry evaluations + Application Insights</td><td>Regression gates, adversarial evaluation, traces, metrics, and production assurance.</td></tr>
-              <tr><td>Research extension</td><td>Rust / Verus</td><td>Potential high-assurance runtime components after the initial demo.</td></tr>
+              <tr><td>Managed runtime</td><td>Microsoft Foundry Hosted Agents / AI Foundry</td><td>Microsoft, platform service</td><td>Container hosting, endpoint, identity, isolation, scaling, and lifecycle for the hosted agent surface.</td></tr>
+              <tr><td>Inner agentic loop</td><td>GitHub Copilot SDK + Copilot CLI</td><td>Microsoft / GitHub, developer stack</td><td>Reason-act-observe turns, custom tools, streaming, context, and loop events.</td></tr>
+              <tr><td>Outer composition</td><td>Microsoft Agent Framework on .NET</td><td>Microsoft, framework / preview-oriented</td><td>Standard agent abstraction, workflow composition, and provider interoperability around the governed host.</td></tr>
+              <tr><td>Runtime governance</td><td>Microsoft Agent Governance Toolkit (AGT)</td><td>Microsoft-owned governance toolkit</td><td>Deterministic allow, deny, or approval-required decisions plus audit and operational controls.</td></tr>
+              <tr><td>Formal assurance</td><td>TypeScript, Dafny, and LemmaScript</td><td>Mixed: Microsoft / open source plus third-party tech preview</td><td>Prove selected deterministic plan and state-machine invariants before governed execution.</td></tr>
+              <tr><td>Infrastructure control</td><td>Microsoft Entra ID + Azure RBAC</td><td>Microsoft, GA</td><td>Least-privilege identity and the physical limit on reachable operations.</td></tr>
+              <tr><td>Quality and operations</td><td>Foundry evaluations + Application Insights</td><td>Microsoft, platform services</td><td>Regression gates, adversarial evaluation, traces, metrics, and production assurance.</td></tr>
+              <tr><td>Research extension</td><td>Rust / Verus</td><td>Rust ecosystem plus academic / research-stage verification</td><td>Potential high-assurance runtime components after the initial demo.</td></tr>
             </tbody>
           </table>
+          <p class="architecture-note">
+            For the broader portfolio operating model this demo sits inside, see the <a href="agent-governance-presentation.html">agent governance presentation</a>.
+          </p>
         </div>
       </div>
     </section>
