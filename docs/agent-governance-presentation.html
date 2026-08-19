@@ -582,6 +582,30 @@
     .recipe-list details a {
       color: var(--cp-link);
     }
+    .passport-table {
+      width: 100%;
+      margin-top: 12px;
+      border-collapse: collapse;
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface);
+    }
+    .passport-table th,
+    .passport-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .passport-table th {
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .passport-table tr:last-child td {
+      border-bottom: 0;
+    }
     .deliverable {
       margin: 18px 0 0;
       padding: 14px 16px;
@@ -1070,10 +1094,23 @@
                 <strong>2. Define the agent passport.</strong><span>Create the mandatory metadata record: purpose, owner, users, data sources, tools, model/provider, environment, identity, risk tier, evals, guardrails, support contact, and retirement date.</span>
                 <details>
                   <summary>Read more</summary>
-                  <p>The passport is the minimum record that lets governance, security, and operations answer who owns the agent, what it can do, and how it is controlled.</p>
+                  <p>The passport is the minimum registry record that lets governance, security, and operations answer: what is this agent, who owns it, where does it run, what can it access, and what evidence proves it is controlled?</p>
+                  <table class="passport-table">
+                    <thead><tr><th>Passport field</th><th>What to capture</th><th>Official anchor</th></tr></thead>
+                    <tbody>
+                      <tr><td>Stable ID and name</td><td>Agent ID, display name, environment, business unit, product/team, and blueprint/template ID if it was created from one.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming">CAF naming guidance</a></td></tr>
+                      <tr><td>Ownership</td><td>Business owner, technical owner, support contact, data owner, tool owner, identity owner, and escalation path.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">CAF governance team</a></td></tr>
+                      <tr><td>Platform location</td><td>Foundry resource, Foundry project, agent scope, Copilot Studio environment, repository, deployment pipeline, and runtime endpoint.</td><td><a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry scopes and RBAC</a></td></tr>
+                      <tr><td>Identity and access</td><td>Managed identity or app registration, service principal owners, RBAC roles, security groups, users who can chat, and users who can author/collaborate.</td><td><a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Entra app owners</a>; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Copilot Studio sharing</a></td></tr>
+                      <tr><td>Purpose and users</td><td>Approved use case, intended users, prohibited uses, business process owner, customer/user exposure, and expected value.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/organize/">CAF organization alignment</a></td></tr>
+                      <tr><td>Data and tools</td><td>Data sources, sensitivity, retrieval scope, callable tools, tool permissions, external connections, and whether tools are read-only or write-capable.</td><td><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Copilot Studio connections/sharing</a>; <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a></td></tr>
+                      <tr><td>Risk and controls</td><td>Risk tier, required approvals, guardrails, gateway policy, kill switch, logging retention, exception status, and review cadence.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">CAF governance process</a></td></tr>
+                      <tr><td>Evidence and lifecycle</td><td>Eval suite, last eval result, last owner attestation, deployment date, last changed date, retirement date, and incident link.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-tagging">CAF tagging strategy</a>; <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a></td></tr>
+                    </tbody>
+                  </table>
                   <ul>
-                    <li>Include Foundry resource, Foundry project, agent scope, identity, endpoint consumers, and project role assignments. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Role-based access control for Microsoft Foundry</a>.</li>
-                    <li>Include who can chat with or collaborate on the agent when using Copilot Studio. Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Share agents with other users</a>.</li>
+                    <li><strong>Decision rule:</strong> if a field changes the risk, access, runtime behavior, support path, or retirement decision, it belongs in the passport.</li>
+                    <li><strong>Implementation tip:</strong> use immutable names for stable identifiers and tags or registry fields for changing metadata such as owner, cost center, risk tier, lifecycle state, and review date.</li>
                   </ul>
                 </details>
               </li>
