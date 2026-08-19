@@ -707,7 +707,7 @@
             </div>
             <div class="answer">
               <span class="answer-number">2</span>
-              <div><strong>How do we know what agents we have?</strong><span>Mandatory registration, identity binding, telemetry discovery, and continuous inventory reconciliation.</span></div>
+              <div><strong>How do we know what agents we have?</strong><span>Agent 365 registry, Entra Agent ID, telemetry discovery, and continuous inventory reconciliation.</span></div>
             </div>
             <div class="answer">
               <span class="answer-number">3</span>
@@ -762,7 +762,7 @@
           </article>
           <article class="step">
             <div class="step-label">Register</div>
-            <div><h3>Bind every agent to ownership and identity</h3><p>Require business owner, technical owner, purpose, environment, managed identity, data sources, tools, model/provider, and support path before production use.</p></div>
+            <div><h3>Bind every agent to ownership and Agent ID</h3><p>Require business owner, technical owner, purpose, environment, Entra Agent ID, data sources, tools, model/provider, and support path before production use.</p></div>
           </article>
           <article class="step">
             <div class="step-label">Classify</div>
@@ -774,7 +774,7 @@
           </article>
           <article class="step">
             <div class="step-label">Run</div>
-            <div><h3>Enforce at runtime, not only at design time</h3><p>Use identity, GenAI gateway controls, guardrails, tool-call policy, rate limits, DLP, approvals, and kill switches.</p></div>
+            <div><h3>Enforce at runtime, not only at design time</h3><p>Use Agent ID, runtime policy, guardrails, tool-call checks, rate limits, DLP, approvals, and kill switches across whichever enforcement pattern the agent uses.</p></div>
           </article>
           <article class="step">
             <div class="step-label">Observe</div>
@@ -817,19 +817,19 @@
             </div>
           </article>
           <article class="layer">
-            <div class="layer-name">Identity and access</div>
+            <div class="layer-name">Agent identity and access</div>
             <div>
-              <h3>Entra-bound identities and least privilege</h3>
-              <p>Every production agent should have a managed identity, scoped permissions, conditional access rules, group-based assignment, and auditable delegation.</p>
-              <div class="chip-row"><span class="chip">Entra ID</span><span class="chip">Managed identity</span><span class="chip">RBAC</span><span class="chip">Conditional access</span></div>
+              <h3>Microsoft Entra Agent ID, delegation, and least privilege</h3>
+              <p>Every production agent needs its own Entra-backed Agent ID so actions can be traced to the specific agent, not only to a hosting app or user session.</p>
+              <div class="chip-row"><span class="chip">Entra Agent ID</span><span class="chip">Delegation</span><span class="chip">RBAC</span><span class="chip">Revocation</span></div>
             </div>
           </article>
           <article class="layer">
             <div class="layer-name">Runtime enforcement</div>
             <div>
-              <h3>Gateway, guardrails, policy, approvals, and kill switch</h3>
-              <p>Runtime controls inspect requests, model outputs, retrieved data, and tool calls before sensitive data leaves or side effects happen.</p>
-              <div class="chip-row"><span class="chip">Foundry</span><span class="chip">GenAI gateway</span><span class="chip">Guardrails</span><span class="chip">Tool policy</span><span class="chip">DLP</span></div>
+              <h3>Policy before side effects, regardless of hosting pattern</h3>
+              <p>Runtime enforcement can sit in Foundry, APIM GenAI Gateway, a tool gateway, an MCP policy layer, Temporal/workflow gates, ACA-hosted services, or custom enforcement code.</p>
+              <div class="chip-row"><span class="chip">Foundry</span><span class="chip">APIM GenAI Gateway</span><span class="chip">Tool gateway</span><span class="chip">MCP policy</span><span class="chip">Custom enforcement</span></div>
             </div>
           </article>
           <article class="layer">
@@ -857,7 +857,7 @@
             <ul>
               <li>Business owner, technical owner, and support contact.</li>
               <li>Purpose, users, environment, lifecycle state, and value hypothesis.</li>
-              <li>Managed identity, model/provider, data sources, tools, and permissions.</li>
+              <li>Entra Agent ID, model/provider, data sources, tools, and permissions.</li>
               <li>Risk tier, required approvals, eval suite, guardrails, and audit retention.</li>
               <li>Dependencies, reusable components, version, and retirement date.</li>
             </ul>
@@ -873,7 +873,43 @@
           </article>
         </div>
         <div class="callout">
-          <strong>Management answer:</strong> we know what agents we have because every production agent has an identity-bound passport, and the platform continuously reconciles declared inventory against runtime reality.
+          <strong>Management answer:</strong> we know what agents we have because Agent 365 provides the inventory surface, every production agent has an Entra Agent ID-bound passport, and the platform continuously reconciles declared inventory against runtime reality.
+        </div>
+      </div>
+    </section>
+
+    <section id="agent-identity">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Agent identity</div>
+          <h2>Agent ID is the missing audit boundary.</h2>
+          <p>Agent governance needs to answer which agent acted, under whose authority, and what that agent was allowed to access. Microsoft Entra Agent ID gives agents their own identity so actions can be authorized, revoked, and traced at agent level.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>What Agent ID answers</h3>
+            <ul>
+              <li>Which agent performed the action?</li>
+              <li>Under whose delegated authority?</li>
+              <li>Which tools and resources could it access?</li>
+              <li>Can the agent identity be disabled or revoked?</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>What to bind</h3>
+            <ul>
+              <li>Agent 365 registry record.</li>
+              <li>Entra Agent ID.</li>
+              <li>Tool/resource permissions.</li>
+              <li>User delegation or service authorization.</li>
+              <li>Trace and audit correlation IDs.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>Official anchor</h3>
+            <p>Microsoft Entra Agent ID secures an agent with its own identity for downstream API access and token exchange.</p>
+            <p><a href="https://learn.microsoft.com/en-us/entra/agent-id/integrate-aws-bedrock-agent">Read: Secure an Amazon Bedrock agent with Microsoft Entra Agent ID</a></p>
+          </article>
         </div>
       </div>
     </section>
@@ -890,7 +926,7 @@
           <tbody>
             <tr><td>Tier 0</td><td>Personal productivity, no sensitive data, no tools.</td><td>Registration, usage policy, basic logging.</td><td>Self-service.</td></tr>
             <tr><td>Tier 1</td><td>Knowledge assistant over approved internal content.</td><td>Owner, data classification, eval baseline, content safety, observability.</td><td>Team owner approval.</td></tr>
-            <tr><td>Tier 2</td><td>Agent with read-only business system tools.</td><td>Managed identity, scoped RBAC, gateway policy, regression evals, audit trail.</td><td>Business and platform approval.</td></tr>
+            <tr><td>Tier 2</td><td>Agent with read-only business system tools.</td><td>Entra Agent ID, scoped RBAC, runtime policy, regression evals, audit trail.</td><td>Business and platform approval.</td></tr>
             <tr><td>Tier 3</td><td>Agent with write actions or customer-impacting workflows.</td><td>Human approval for high-impact actions, tool certification, red-team tests, incident runbook, kill switch.</td><td>Security, compliance, and business approval.</td></tr>
             <tr><td>Tier 4</td><td>Autonomous operational agent for critical systems.</td><td>Formalized policy, strict budgets, blast-radius controls, continuous monitoring, change management, executive risk acceptance.</td><td>Central governance board.</td></tr>
           </tbody>
@@ -930,18 +966,18 @@
         <div class="section-header">
           <div class="kicker">Runtime enforcement</div>
           <h2>Design-time review is not enough for agentic systems.</h2>
-          <p>Runtime controls must see the full path: user request, prompt, retrieved context, model output, planned action, tool call, approval, and result.</p>
+          <p>Runtime controls must see the full path: user request, Agent ID, prompt, retrieved context, model output, planned action, tool call, approval, and result. The enforcement pattern can vary; the requirement is consistent policy before side effects.</p>
         </div>
         <div class="architecture-map">
           <div class="map-grid">
             <div class="map-node"><span class="map-label">Request</span><strong>User or workflow trigger</strong><p>Authenticated user, business process, or scheduled event.</p></div>
             <div class="map-node"><span class="map-label">Reason</span><strong>Agent runtime</strong><p>Model, prompt, memory, retrieval, planning, and tool selection.</p></div>
-            <div class="map-node"><span class="map-label">Check</span><strong>Policy and guardrails</strong><p>Safety, DLP, data boundaries, jailbreak checks, and action policy.</p></div>
+            <div class="map-node"><span class="map-label">Check</span><strong>Policy and guardrails</strong><p>Agent ID, safety, DLP, data boundaries, jailbreak checks, and action policy.</p></div>
             <div class="map-node"><span class="map-label">Approve</span><strong>Human or automated gate</strong><p>Exact approval for high-impact actions, budgets, and exceptions.</p></div>
-            <div class="map-node"><span class="map-label">Execute</span><strong>Governed tool gateway</strong><p>Revalidate identity, scope, policy, approval, and audit before side effects.</p></div>
+            <div class="map-node"><span class="map-label">Execute</span><strong>Enforcement point</strong><p>Revalidate Agent ID, scope, policy, approval, and audit before side effects.</p></div>
           </div>
           <div class="callout">
-            Runtime enforcement should be close to the side effect. If a tool can change a system, the gateway must re-check authorization, policy, approval, and blast radius even if the agent already checked earlier.
+            Runtime enforcement should be close to the side effect. If a tool can change a system, the enforcement point must re-check Agent ID, authorization, policy, approval, and blast radius even if the agent already checked earlier.
           </div>
         </div>
       </div>
@@ -955,6 +991,15 @@
           <p>Evals and observability should become release gates, operational dashboards, and audit evidence, not ad hoc notebooks.</p>
         </div>
         <div class="grid-3">
+          <article class="card">
+            <h3>Executive questions</h3>
+            <ul>
+              <li>Which agents exist, and which are active?</li>
+              <li>Which agents create value?</li>
+              <li>Which agents are risky, ownerless, or unmanaged?</li>
+              <li>Which agents should be retired?</li>
+            </ul>
+          </article>
           <article class="card">
             <h3>Before release</h3>
             <ul>
@@ -983,6 +1028,31 @@
       </div>
     </section>
 
+    <section id="microsoft-mapping">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Microsoft capability mapping</div>
+          <h2>This is an operating model with product anchors.</h2>
+          <p>The pattern is architecture-neutral, but customers should see where Microsoft capabilities fit today.</p>
+        </div>
+        <table class="stack-table">
+          <thead><tr><th>Governance capability</th><th>Microsoft mapping</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>Inventory and control plane</td><td>Microsoft Agent 365 Agent Registry, Agent Map, Connected platforms</td><td>Know which agents exist, which are ownerless/unmanaged, where they came from, and how they are used.</td></tr>
+            <tr><td>Agent identity</td><td>Microsoft Entra Agent ID</td><td>Trace and authorize the specific agent that acted, including delegated access and revocation.</td></tr>
+            <tr><td>User and app access</td><td>Microsoft Entra ID, RBAC, Conditional Access</td><td>Control users, groups, apps, resource access, and privileged operations.</td></tr>
+            <tr><td>Runtime enforcement</td><td>Foundry controls, APIM GenAI Gateway, tool gateway, MCP policy layer, custom enforcement</td><td>Apply policy before tool calls, data movement, and side effects.</td></tr>
+            <tr><td>Data protection and compliance</td><td>Microsoft Purview</td><td>Information protection, DLP, retention, compliance, and data-risk controls.</td></tr>
+            <tr><td>Threat detection</td><td>Microsoft Defender</td><td>Detect risky or malicious agent behavior and protect agents at runtime.</td></tr>
+            <tr><td>Observability</td><td>Agent 365, Foundry observability, Application Insights, Log Analytics</td><td>Monitor activity, usage, health, quality, cost, traces, and risk signals.</td></tr>
+            <tr><td>Evaluations</td><td>Foundry evals</td><td>Gate releases and detect regressions in quality, safety, groundedness, tool use, and task completion.</td></tr>
+            <tr><td>Publishing and build plane</td><td>Copilot Studio, Microsoft Foundry</td><td>Build, test, publish, and operate agents using approved paths.</td></tr>
+            <tr><td>Policy and standards</td><td>Azure Policy, APIM policies, Purview policies</td><td>Enforce resource, traffic, data, and compliance standards.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section id="developer-path">
       <div class="shell">
         <div class="section-header">
@@ -995,9 +1065,9 @@
           <tbody>
             <tr><td>1. Start</td><td>Select a certified agent template.</td><td>Foundry toolbox, sample repos, approved architecture patterns.</td></tr>
             <tr><td>2. Register</td><td>Create the agent passport and bind owner, purpose, and environment.</td><td>Microsoft Agent 365 Agent Registry plus required passport metadata.</td></tr>
-            <tr><td>3. Attach identity</td><td>Use managed identity and request scoped permissions.</td><td>Entra groups, RBAC workflows, conditional access, access review.</td></tr>
+            <tr><td>3. Attach Agent ID</td><td>Bind the agent to Microsoft Entra Agent ID and request scoped permissions.</td><td>Entra Agent ID, RBAC workflows, conditional access, access review.</td></tr>
             <tr><td>4. Choose tools</td><td>Reuse certified tools before building new ones.</td><td>Tool catalog, schemas, policy requirements, versioning, examples.</td></tr>
-            <tr><td>5. Add guardrails</td><td>Declare input, retrieval, output, and tool-call policies.</td><td>GenAI gateway, content filters, DLP, policy-as-code, approval gates.</td></tr>
+            <tr><td>5. Add guardrails</td><td>Declare input, retrieval, output, and tool-call policies.</td><td>Foundry controls, APIM GenAI Gateway, MCP policy, custom enforcement, content filters, DLP, approval gates.</td></tr>
             <tr><td>6. Run evals</td><td>Prove the agent meets quality, safety, and tool-use thresholds.</td><td>Foundry evals, regression suites, adversarial tests, release gates.</td></tr>
             <tr><td>7. Deploy</td><td>Promote through environments with evidence attached.</td><td>CI/CD gates, audit records, runtime policy, observability setup.</td></tr>
             <tr><td>8. Operate</td><td>Monitor behavior, cost, incidents, feedback, and drift.</td><td>Application Insights, traces, dashboards, alerts, owner attestation.</td></tr>
@@ -1048,7 +1118,7 @@
             <span class="phase-label">Walk</span>
             <h3>Automated gates and runtime policy</h3>
             <ul>
-              <li>Adopt gateway controls for tool calls.</li>
+              <li>Adopt runtime enforcement for tool calls.</li>
               <li>Make evals part of release promotion.</li>
               <li>Launch reusable tool catalog.</li>
               <li>Connect observability to portfolio reporting.</li>
@@ -1085,7 +1155,7 @@
                     <li><strong>Governance team:</strong> executive sponsor, platform owner, security/compliance owner, and operating cadence. Source: <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Build a cloud governance team</a>.</li>
                     <li><strong>Agent instance / Agent ID:</strong> business owner, technical owner, risk owner, support contact, and escalation path.</li>
                     <li><strong>Blueprint or template:</strong> blueprint product owner responsible for default controls, docs, evals, versioning, and deprecation.</li>
-                    <li><strong>Identity and access:</strong> Entra app/service principal owner, managed identity owner, security group owner, and RBAC assignment owner. Sources: <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Assign enterprise application owners</a> and <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a>.</li>
+                    <li><strong>Agent identity and access:</strong> Entra Agent ID owner, app/service principal owner where applicable, security group owner, and RBAC assignment owner. Sources: <a href="https://learn.microsoft.com/en-us/entra/agent-id/integrate-aws-bedrock-agent">Microsoft Entra Agent ID</a>, <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Assign enterprise application owners</a>, and <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a>.</li>
                     <li><strong>Data, tool, and runtime owners:</strong> data owner for each source, tool owner for every callable tool, and platform/runtime owner for the hosting environment.</li>
                   </ul>
                 </details>
@@ -1099,9 +1169,9 @@
                     <thead><tr><th>Passport field</th><th>What to capture</th><th>Official anchor</th></tr></thead>
                     <tbody>
                       <tr><td>Stable ID and name</td><td>Agent ID, display name, environment, business unit, product/team, and blueprint/template ID if it was created from one.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming">CAF naming guidance</a></td></tr>
-                      <tr><td>Ownership</td><td>Business owner, technical owner, support contact, data owner, tool owner, identity owner, and escalation path.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">CAF governance team</a></td></tr>
+                      <tr><td>Ownership</td><td>Business owner, technical owner, support contact, data owner, tool owner, Agent ID owner, and escalation path.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">CAF governance team</a></td></tr>
                       <tr><td>Platform location</td><td>Foundry resource, Foundry project, agent scope, Copilot Studio environment, repository, deployment pipeline, and runtime endpoint.</td><td><a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry scopes and RBAC</a></td></tr>
-                      <tr><td>Identity and access</td><td>Managed identity or app registration, service principal owners, RBAC roles, security groups, users who can chat, and users who can author/collaborate.</td><td><a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Entra app owners</a>; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Copilot Studio sharing</a></td></tr>
+                      <tr><td>Agent identity and access</td><td>Entra Agent ID, delegation model, service principal owners where applicable, RBAC roles, security groups, users who can chat, and users who can author/collaborate.</td><td><a href="https://learn.microsoft.com/en-us/entra/agent-id/integrate-aws-bedrock-agent">Entra Agent ID</a>; <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Copilot Studio sharing</a></td></tr>
                       <tr><td>Purpose and users</td><td>Approved use case, intended users, prohibited uses, business process owner, customer/user exposure, and expected value.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/organize/">CAF organization alignment</a></td></tr>
                       <tr><td>Data and tools</td><td>Data sources, sensitivity, retrieval scope, callable tools, tool permissions, external connections, and whether tools are read-only or write-capable.</td><td><a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Copilot Studio connections/sharing</a>; <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a></td></tr>
                       <tr><td>Risk and controls</td><td>Risk tier, required approvals, guardrails, gateway policy, kill switch, logging retention, exception status, and review cadence.</td><td><a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">CAF governance process</a></td></tr>
@@ -1141,19 +1211,19 @@
                 </details>
               </li>
               <li>
-                <strong>5. Bind every production agent to identity.</strong><span>Require a managed identity or app registration, Entra group ownership, least-privilege permissions, and an access review cadence.</span>
+                <strong>5. Bind every production agent to Entra Agent ID.</strong><span>Require an Entra Agent ID, delegation model, group ownership, least-privilege permissions, and an access review cadence.</span>
                 <details>
                   <summary>Read more</summary>
-                  <p>Every production agent should have a traceable identity and least-privilege access path. Avoid key-based access where identity-based RBAC is available.</p>
+                  <p>Every production agent should have a traceable Entra Agent ID and least-privilege access path. This is what lets you answer which agent acted, under whose authority, and whether that agent can be revoked.</p>
                   <ul>
+                    <li>Use Microsoft Entra Agent ID for agent-level identity and downstream API access. Source: <a href="https://learn.microsoft.com/en-us/entra/agent-id/integrate-aws-bedrock-agent">Microsoft Entra Agent ID</a>.</li>
                     <li>Assign Entra owners for enterprise applications and service principals. Source: <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Assign enterprise application owners</a>.</li>
                     <li>Use Foundry roles and scopes for resource, project, and agent endpoint access. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Microsoft Foundry RBAC</a>.</li>
-                    <li>Use managed identities where possible. Source: <a href="https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview">Managed identities for Azure resources</a>.</li>
                   </ul>
                 </details>
               </li>
               <li>
-                <strong>6. Establish minimum runtime logging.</strong><span>Capture agent identity, user, timestamp, model/provider, data source, tool calls, policy decision, approval decision, errors, latency, and cost.</span>
+                <strong>6. Establish minimum runtime logging.</strong><span>Capture Agent ID, user, timestamp, model/provider, data source, tool calls, policy decision, approval decision, errors, latency, and cost.</span>
                 <details>
                   <summary>Read more</summary>
                   <p>Minimum logging should support audit, incident response, cost management, and owner attestation. Log policy decisions as first-class events, not only model prompts.</p>
@@ -1199,13 +1269,13 @@
             </div>
             <ol class="recipe-list">
               <li>
-                <strong>1. Put tool calls behind a gateway.</strong><span>Route sensitive tool calls through a GenAI gateway or governed tool gateway that checks identity, scope, policy, approval, rate limits, and audit requirements.</span>
+                <strong>1. Put tool calls behind runtime enforcement.</strong><span>Route sensitive tool calls through Foundry controls, APIM GenAI Gateway, a tool gateway, MCP policy layer, workflow gate, ACA-hosted service, or custom enforcement layer that checks Agent ID, scope, policy, approval, rate limits, and audit requirements.</span>
                 <details>
                   <summary>Read more</summary>
-                  <p>Start with tools that can write, send, delete, change access, spend money, or call external systems. Put those behind a mediated API layer before expanding to lower-risk tools.</p>
+                  <p>Start with tools that can write, send, delete, change access, spend money, or call external systems. Put those behind an enforcement point before expanding to lower-risk tools.</p>
                   <ul>
                     <li>Onboard AI model, agent, MCP, and A2A endpoints through an AI gateway where possible. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities in Azure API Management</a>.</li>
-                    <li>Check caller identity, agent identity, tool name, resource scope, risk tier, approval requirement, and rate/token budget before execution.</li>
+                    <li>Check caller identity, Entra Agent ID, tool name, resource scope, risk tier, approval requirement, and rate/token budget before execution.</li>
                     <li>Log allow/deny/approval-required decisions as audit events, not only API access logs.</li>
                     <li>For Foundry agents, align endpoint access with Foundry roles and agent scopes. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Microsoft Foundry RBAC</a>.</li>
                   </ul>
@@ -1292,7 +1362,7 @@
                   <summary>Read more</summary>
                   <p>The golden path should make the compliant path faster than the custom path.</p>
                   <ul>
-                    <li>Provide starter templates for each approved pattern, prewired to Agent 365 registry metadata, managed identity, logging, evals, and gateway policy.</li>
+                    <li>Provide starter templates for each approved pattern, prewired to Agent 365 registry metadata, Entra Agent ID, logging, evals, and runtime policy.</li>
                     <li>Use Foundry project roles to separate project managers, builders, publishers, and consumers. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC enterprise mappings</a>.</li>
                     <li>Automate passport creation, role checks, eval execution, and release evidence collection in CI/CD.</li>
                   </ul>
@@ -1311,7 +1381,7 @@
               <span>Audience: enterprise-wide agent builders</span>
             </div>
             <ol class="recipe-list">
-              <li><strong>1. Automate drift detection.</strong><span>Continuously compare Agent 365 registry metadata with runtime reality: new tools, permission changes, model changes, prompt changes, data source changes, and unexplained traffic.</span><details><summary>Read more</summary><p>Turn owner attestation into automated reconciliation.</p><ul><li>Use Agent 365 ownerless-agent, unmanaged-agent, connected-platform, and Agent Map signals as the primary drift surface.</li><li>Compare passport metadata with Foundry projects, agent scopes, Entra app owners, RBAC assignments, Copilot Studio sharing, gateway logs, and telemetry.</li><li>Alert on new tools, changed permissions, model/provider changes, unregistered endpoints, stale owners, expired exceptions, and traffic from nonproduction agents.</li><li>Use Azure Policy and Azure Monitor where Azure resources are involved. Sources: <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-registry?view=o365-worldwide">Agent Registry</a>, <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-map?view=o365-worldwide">Agent Map</a>, <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy</a>, and <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a>.</li></ul></details></li>
+              <li><strong>1. Automate drift detection.</strong><span>Continuously compare Agent 365 registry metadata with runtime reality: new tools, permission changes, Agent ID changes, model changes, prompt changes, data source changes, and unexplained traffic.</span><details><summary>Read more</summary><p>Turn owner attestation into automated reconciliation.</p><ul><li>Use Agent 365 ownerless-agent, unmanaged-agent, connected-platform, and Agent Map signals as the primary drift surface.</li><li>Compare passport metadata with Foundry projects, agent scopes, Entra Agent IDs, RBAC assignments, Copilot Studio sharing, gateway logs, and telemetry.</li><li>Alert on new tools, changed permissions, Agent ID changes, model/provider changes, unregistered endpoints, stale owners, expired exceptions, and traffic from nonproduction agents.</li><li>Use Azure Policy and Azure Monitor where Azure resources are involved. Sources: <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-registry?view=o365-worldwide">Agent Registry</a>, <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-map?view=o365-worldwide">Agent Map</a>, <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy</a>, and <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a>.</li></ul></details></li>
               <li><strong>2. Productize agent templates.</strong><span>Certify reusable templates for knowledge retrieval, workflow automation, approval-based actions, service desk, engineering operations, and customer support.</span><details><summary>Read more</summary><p>A template is reusable only if teams can adopt it safely without rediscovering governance decisions.</p><ul><li>Each template should include passport defaults, allowed tools, RBAC pattern, eval suite, logging hooks, gateway policy, documentation, known limitations, and owner.</li><li>Version templates and publish migration guidance when policies, models, or tool contracts change.</li><li>Use Foundry project and role patterns for builder/publisher separation. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a>.</li></ul></details></li>
               <li><strong>3. Mature the tool marketplace.</strong><span>Measure adoption, deprecate duplicate tools, require semantic versioning, publish SLAs, and make certified tools easier to use than custom integrations.</span><details><summary>Read more</summary><p>Move from a list of tools to a governed internal product marketplace.</p><ul><li>For each tool product, track owner, schema, auth model, permission scope, side-effect class, SLA, version, usage count, incident count, eval/test evidence, and deprecation status.</li><li>Use API gateway capabilities to govern APIs and tools consistently. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities</a>.</li><li>Measure duplicate custom tools and redirect teams to certified equivalents.</li></ul></details></li>
               <li><strong>4. Use risk-based automated approvals.</strong><span>Auto-approve low-risk agents that meet policy, route medium-risk agents to business/platform approval, and reserve central review for high-impact autonomy.</span><details><summary>Read more</summary><p>Automation should reduce review load without hiding risk.</p><ul><li>Auto-approve Tier 0-1 agents only when passport, identity, logging, allowed data, allowed tools, and eval minimums pass.</li><li>Route Tier 2 to business/platform approval and Tier 3-4 to security/compliance or governance board review.</li><li>Use Azure Policy compliance and gateway policy evidence as machine-checkable inputs. Source: <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy overview</a>.</li></ul></details></li>
