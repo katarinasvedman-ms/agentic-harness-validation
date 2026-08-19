@@ -758,7 +758,7 @@
         <div class="lifecycle">
           <article class="step">
             <div class="step-label">Discover</div>
-            <div><h3>Find agents across builders, platforms, and telemetry</h3><p>Combine A365 or agent registry records, Foundry assets, code repositories, gateway traffic, and observability signals to detect both registered and shadow agents.</p></div>
+            <div><h3>Find agents across builders, platforms, and telemetry</h3><p>Use Microsoft Agent 365 as the grounding control plane: start with Agent Registry and Agent Map, then reconcile connected platforms, Foundry assets, code repositories, gateway traffic, and observability signals.</p></div>
           </article>
           <article class="step">
             <div class="step-label">Register</div>
@@ -811,9 +811,9 @@
           <article class="layer">
             <div class="layer-name">Agent control plane</div>
             <div>
-              <h3>A365, registry, catalog, metadata, and evidence</h3>
-              <p>The system of record for agents, tools, prompts, templates, versions, ownership, dependencies, and certification evidence.</p>
-              <div class="chip-row"><span class="chip">A365</span><span class="chip">Agent registry</span><span class="chip">Tool catalog</span><span class="chip">Reuse marketplace</span></div>
+              <h3>Microsoft Agent 365 registry, map, connected platforms, metadata, and evidence</h3>
+              <p>Agent 365 is the grounding control plane for the agent estate. It provides centralized visibility, lifecycle management, access governance, ownerless-agent detection, unmanaged-agent signals, and connections to external agent platforms.</p>
+              <div class="chip-row"><span class="chip">Agent 365</span><span class="chip">Agent Registry</span><span class="chip">Agent Map</span><span class="chip">Connected platforms</span></div>
             </div>
           </article>
           <article class="layer">
@@ -849,7 +849,7 @@
         <div class="section-header">
           <div class="kicker">Inventory and ownership</div>
           <h2>Knowing what agents you have requires both registration and detection.</h2>
-          <p>A registry tells you what should exist. Telemetry and gateway logs tell you what actually exists.</p>
+          <p>Microsoft Agent 365 Agent Registry is the first inventory surface. Telemetry, connected platforms, and gateway logs then help reconcile what is registered, unmanaged, ownerless, active, risky, or missing.</p>
         </div>
         <div class="grid-2">
           <article class="panel card">
@@ -865,7 +865,7 @@
           <article class="panel card">
             <h3>Continuous reconciliation</h3>
             <ul>
-              <li>Compare registry records to Foundry assets, repositories, gateway traffic, and logs.</li>
+              <li>Compare Agent 365 registry records to Agent Map, connected platforms, Foundry assets, repositories, gateway traffic, and logs.</li>
               <li>Flag agents with no owner, stale owner attestation, or unapproved tools.</li>
               <li>Detect production traffic from development or unregistered agents.</li>
               <li>Report portfolio health by business unit, risk tier, cost, and reuse.</li>
@@ -994,7 +994,7 @@
           <thead><tr><th>Step</th><th>Developer action</th><th>Platform support</th></tr></thead>
           <tbody>
             <tr><td>1. Start</td><td>Select a certified agent template.</td><td>Foundry toolbox, sample repos, approved architecture patterns.</td></tr>
-            <tr><td>2. Register</td><td>Create the agent passport and bind owner, purpose, and environment.</td><td>A365 or agent registry workflow with required metadata.</td></tr>
+            <tr><td>2. Register</td><td>Create the agent passport and bind owner, purpose, and environment.</td><td>Microsoft Agent 365 Agent Registry plus required passport metadata.</td></tr>
             <tr><td>3. Attach identity</td><td>Use managed identity and request scoped permissions.</td><td>Entra groups, RBAC workflows, conditional access, access review.</td></tr>
             <tr><td>4. Choose tools</td><td>Reuse certified tools before building new ones.</td><td>Tool catalog, schemas, policy requirements, versioning, examples.</td></tr>
             <tr><td>5. Add guardrails</td><td>Declare input, retrieval, output, and tool-call policies.</td><td>GenAI gateway, content filters, DLP, policy-as-code, approval gates.</td></tr>
@@ -1016,7 +1016,7 @@
         <div class="persona-grid">
           <article class="role"><strong>Business owner</strong><p>Defines purpose, value, acceptable risk, user scope, and lifecycle.</p></article>
           <article class="role"><strong>Technical owner</strong><p>Owns implementation, dependencies, tool use, evals, and operations.</p></article>
-          <article class="role"><strong>Platform team</strong><p>Provides registry, templates, gateway, observability, and paved roads.</p></article>
+          <article class="role"><strong>Platform team</strong><p>Operates Agent 365, connected-platform sync, templates, gateway, observability, and paved roads.</p></article>
           <article class="role"><strong>Security and compliance</strong><p>Defines policies, risk tiers, exceptions, audit needs, and guardrails.</p></article>
           <article class="role"><strong>Tool owner</strong><p>Certifies tool contracts, permissions, tests, versions, and deprecation.</p></article>
           <article class="role"><strong>Data owner</strong><p>Approves data use, classification, retention, and DLP requirements.</p></article>
@@ -1126,14 +1126,17 @@
                 </details>
               </li>
               <li>
-                <strong>4. Inventory known agents and tools.</strong><span>Seed the registry from A365 or your agent catalog, Foundry projects, repositories, Teams apps, Copilot extensions, Power Platform assets, gateway logs, and stakeholder interviews.</span>
+                <strong>4. Inventory known agents and tools.</strong><span>Start in Microsoft Agent 365 Agent Registry and Agent Map, then reconcile connected platforms, Foundry projects, repositories, Teams apps, Copilot extensions, Power Platform assets, gateway logs, and stakeholder interviews.</span>
                 <details>
                   <summary>Read more</summary>
-                  <p>Combine declared inventory with runtime discovery. A registry tells you what should exist; telemetry and access systems tell you what actually exists.</p>
+                  <p>Make Agent 365 the system of record for enterprise agent inventory. The Agent Registry gives the list view; Agent Map gives a visual, scalable view by platform, publisher, status, ownerless agents, unmanaged agents, and risk signals.</p>
                   <ul>
+                    <li>Start with the Agent 365 overview and agent-management model. Source: <a href="https://learn.microsoft.com/en-us/microsoft-agent-365/overview">Microsoft Agent 365 overview</a>.</li>
+                    <li>Use Agent Registry for centralized tenant-wide inventory, ownerless-agent count, unmanaged-agent count, filters, export, and actions. Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-registry?view=o365-worldwide">Agent Registry in Microsoft 365 admin center</a>.</li>
+                    <li>Use Agent Map to visualize agent clusters across platforms and inspect ownership, configuration, activity, and risk signals. Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-map?view=o365-worldwide">Use Agent Map</a>.</li>
+                    <li>Use Connected platforms to synchronize agents from supported external platforms into Agent 365. Source: <a href="https://learn.microsoft.com/en-us/microsoft-agent-365/admin/connected-platforms">Connected platforms in the Microsoft 365 agent registry</a>.</li>
                     <li>Inventory Foundry resources, projects, agents, agent scopes, and consumers. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC scopes and roles</a>.</li>
                     <li>Inventory Copilot Studio sharing and collaborator settings. Source: <a href="https://learn.microsoft.com/en-us/microsoft-copilot-studio/admin-share-bots">Share agents with other users</a>.</li>
-                    <li>Inventory Copilot admin controls where applicable. Source: <a href="https://learn.microsoft.com/en-us/microsoft-365/copilot/microsoft-365-copilot-page">Manage Microsoft Copilot scenarios</a>.</li>
                   </ul>
                 </details>
               </li>
@@ -1289,7 +1292,7 @@
                   <summary>Read more</summary>
                   <p>The golden path should make the compliant path faster than the custom path.</p>
                   <ul>
-                    <li>Provide starter templates for each approved pattern, prewired to registry metadata, managed identity, logging, evals, and gateway policy.</li>
+                    <li>Provide starter templates for each approved pattern, prewired to Agent 365 registry metadata, managed identity, logging, evals, and gateway policy.</li>
                     <li>Use Foundry project roles to separate project managers, builders, publishers, and consumers. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC enterprise mappings</a>.</li>
                     <li>Automate passport creation, role checks, eval execution, and release evidence collection in CI/CD.</li>
                   </ul>
@@ -1308,7 +1311,7 @@
               <span>Audience: enterprise-wide agent builders</span>
             </div>
             <ol class="recipe-list">
-              <li><strong>1. Automate drift detection.</strong><span>Continuously compare registry metadata with runtime reality: new tools, permission changes, model changes, prompt changes, data source changes, and unexplained traffic.</span><details><summary>Read more</summary><p>Turn owner attestation into automated reconciliation.</p><ul><li>Compare passport metadata with Foundry projects, agent scopes, Entra app owners, RBAC assignments, Copilot Studio sharing, gateway logs, and telemetry.</li><li>Alert on new tools, changed permissions, model/provider changes, unregistered endpoints, stale owners, expired exceptions, and traffic from nonproduction agents.</li><li>Use Azure Policy and Azure Monitor where Azure resources are involved. Sources: <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy</a> and <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a>.</li></ul></details></li>
+              <li><strong>1. Automate drift detection.</strong><span>Continuously compare Agent 365 registry metadata with runtime reality: new tools, permission changes, model changes, prompt changes, data source changes, and unexplained traffic.</span><details><summary>Read more</summary><p>Turn owner attestation into automated reconciliation.</p><ul><li>Use Agent 365 ownerless-agent, unmanaged-agent, connected-platform, and Agent Map signals as the primary drift surface.</li><li>Compare passport metadata with Foundry projects, agent scopes, Entra app owners, RBAC assignments, Copilot Studio sharing, gateway logs, and telemetry.</li><li>Alert on new tools, changed permissions, model/provider changes, unregistered endpoints, stale owners, expired exceptions, and traffic from nonproduction agents.</li><li>Use Azure Policy and Azure Monitor where Azure resources are involved. Sources: <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-registry?view=o365-worldwide">Agent Registry</a>, <a href="https://learn.microsoft.com/en-us/microsoft-365/admin/manage/agent-map?view=o365-worldwide">Agent Map</a>, <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy</a>, and <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a>.</li></ul></details></li>
               <li><strong>2. Productize agent templates.</strong><span>Certify reusable templates for knowledge retrieval, workflow automation, approval-based actions, service desk, engineering operations, and customer support.</span><details><summary>Read more</summary><p>A template is reusable only if teams can adopt it safely without rediscovering governance decisions.</p><ul><li>Each template should include passport defaults, allowed tools, RBAC pattern, eval suite, logging hooks, gateway policy, documentation, known limitations, and owner.</li><li>Version templates and publish migration guidance when policies, models, or tool contracts change.</li><li>Use Foundry project and role patterns for builder/publisher separation. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a>.</li></ul></details></li>
               <li><strong>3. Mature the tool marketplace.</strong><span>Measure adoption, deprecate duplicate tools, require semantic versioning, publish SLAs, and make certified tools easier to use than custom integrations.</span><details><summary>Read more</summary><p>Move from a list of tools to a governed internal product marketplace.</p><ul><li>For each tool product, track owner, schema, auth model, permission scope, side-effect class, SLA, version, usage count, incident count, eval/test evidence, and deprecation status.</li><li>Use API gateway capabilities to govern APIs and tools consistently. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities</a>.</li><li>Measure duplicate custom tools and redirect teams to certified equivalents.</li></ul></details></li>
               <li><strong>4. Use risk-based automated approvals.</strong><span>Auto-approve low-risk agents that meet policy, route medium-risk agents to business/platform approval, and reserve central review for high-impact autonomy.</span><details><summary>Read more</summary><p>Automation should reduce review load without hiding risk.</p><ul><li>Auto-approve Tier 0-1 agents only when passport, identity, logging, allowed data, allowed tools, and eval minimums pass.</li><li>Route Tier 2 to business/platform approval and Tier 3-4 to security/compliance or governance board review.</li><li>Use Azure Policy compliance and gateway policy evidence as machine-checkable inputs. Source: <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy overview</a>.</li></ul></details></li>
