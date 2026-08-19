@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A high-level to developer-oriented presentation on governing enterprise agent portfolios at scale.">
+  <title>Agent Governance at Enterprise Scale</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+    }
+    a { color: var(--cp-link); }
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--cp-border);
+      background: var(--cp-overlay);
+      backdrop-filter: blur(14px);
+    }
+    .topbar-inner {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--cp-text);
+      text-decoration: none;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 0.625rem;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 900;
+    }
+    nav {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    nav a {
+      color: var(--cp-text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    nav a:hover { color: var(--cp-text); }
+    .hero {
+      padding: 88px 0 64px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 44px;
+      align-items: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 6px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .eyebrow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cp-success);
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      margin-bottom: 24px;
+      font-size: clamp(46px, 7vw, 78px);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+    h1 span { color: var(--cp-accent); }
+    h2 {
+      margin-bottom: 16px;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+    }
+    h3 {
+      margin-bottom: 10px;
+      font-size: 21px;
+      letter-spacing: -0.02em;
+    }
+    .hero-copy {
+      max-width: 720px;
+      margin-bottom: 32px;
+      color: var(--cp-text-muted);
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.55;
+    }
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border: 1px solid var(--cp-accent);
+      border-radius: 0.625rem;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .button.secondary {
+      border-color: var(--cp-border);
+      background: var(--cp-surface);
+      color: var(--cp-text);
+    }
+    .hero-card,
+    .card,
+    .panel,
+    .metric,
+    .layer,
+    .step,
+    .role,
+    .callout {
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      box-shadow: var(--cp-shadow);
+    }
+    .hero-card {
+      padding: 28px;
+    }
+    .hero-card h2 {
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+    .hero-card p {
+      color: var(--cp-text-muted);
+    }
+    .answer-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .answer {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+    }
+    .answer-number {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 900;
+    }
+    .answer strong { display: block; margin-bottom: 4px; }
+    .answer span { color: var(--cp-text-muted); font-size: 14px; }
+    section { padding: 72px 0; }
+    .section-header {
+      max-width: 780px;
+      margin-bottom: 34px;
+    }
+    .kicker {
+      margin-bottom: 10px;
+      color: var(--cp-accent);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .section-header p {
+      color: var(--cp-text-muted);
+      font-size: 18px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .card {
+      padding: 24px;
+    }
+    .card p,
+    .card li,
+    .panel p,
+    .step p,
+    .role p {
+      color: var(--cp-text-muted);
+    }
+    .card ul,
+    .panel ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+    }
+    .card li,
+    .panel li {
+      margin-bottom: 8px;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .metric {
+      padding: 22px;
+      box-shadow: none;
+    }
+    .metric strong {
+      display: block;
+      color: var(--cp-accent);
+      font-size: 32px;
+      line-height: 1;
+    }
+    .metric span {
+      display: block;
+      margin-top: 10px;
+      color: var(--cp-text-muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .lifecycle {
+      display: grid;
+      gap: 12px;
+    }
+    .step {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 20px;
+      padding: 20px;
+      box-shadow: none;
+    }
+    .step-label {
+      color: var(--cp-accent);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .control-plane {
+      display: grid;
+      gap: 14px;
+    }
+    .layer {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 20px;
+      padding: 22px;
+      box-shadow: none;
+    }
+    .layer-name {
+      color: var(--cp-accent);
+      font-weight: 900;
+    }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 9px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .risk-table,
+    .stack-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--cp-surface);
+    }
+    .risk-table th,
+    .risk-table td,
+    .stack-table th,
+    .stack-table td {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--cp-border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .risk-table th,
+    .stack-table th {
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .risk-table tr:last-child td,
+    .stack-table tr:last-child td {
+      border-bottom: 0;
+    }
+    .risk-table td:first-child,
+    .stack-table td:first-child {
+      font-weight: 800;
+    }
+    .architecture-map {
+      padding: 28px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+    .map-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    .map-node {
+      min-height: 150px;
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+    }
+    .map-node strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+    .map-node p {
+      margin: 0;
+      color: var(--cp-text-muted);
+      font-size: 14px;
+    }
+    .map-label {
+      display: block;
+      margin-bottom: 12px;
+      color: var(--cp-accent);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .callout {
+      margin-top: 20px;
+      padding: 20px;
+      border-left: 4px solid var(--cp-accent);
+      box-shadow: none;
+      color: var(--cp-text-muted);
+    }
+    .persona-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .role {
+      padding: 20px;
+      box-shadow: none;
+    }
+    .role strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--cp-accent);
+    }
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .phase {
+      padding: 24px;
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      background: var(--cp-bg-elevated);
+    }
+    .phase-label {
+      display: inline-flex;
+      margin-bottom: 18px;
+      padding: 6px 10px;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .phase ul {
+      margin: 12px 0 0;
+      padding-left: 20px;
+      color: var(--cp-text-muted);
+    }
+    .closing {
+      margin: 32px 0 72px;
+      padding: 48px;
+      border-radius: 16px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      text-align: center;
+    }
+    .closing h2 {
+      max-width: 820px;
+      margin: 0 auto 16px;
+    }
+    .closing p {
+      max-width: 760px;
+      margin: 0 auto;
+      font-size: 18px;
+    }
+    @media (max-width: 900px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .metric-row,
+      .layer,
+      .map-grid,
+      .persona-grid,
+      .roadmap {
+        grid-template-columns: 1fr;
+      }
+      nav { display: none; }
+      .step { grid-template-columns: 1fr; }
+    }
+    @media print {
+      .topbar { position: static; }
+      section { break-inside: avoid; padding: 36px 0; }
+      .button-row { display: none; }
+      .hero-card,
+      .card,
+      .panel,
+      .metric { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="#top" aria-label="Back to top">
+        <span class="brand-mark">G</span>
+        <span>Agent Governance</span>
+      </a>
+      <nav aria-label="Presentation sections">
+        <a href="#problem">Problem</a>
+        <a href="#model">Model</a>
+        <a href="#control-plane">Control plane</a>
+        <a href="#developer-path">Developer path</a>
+        <a href="#roadmap">Roadmap</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="shell hero">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-dot"></span> Enterprise agent governance</div>
+          <h1>Govern <span>10,000 agents</span> without slowing every team down.</h1>
+          <p class="hero-copy">
+            Agent governance is portfolio management, runtime control, and software supply-chain discipline brought together. The goal is not to block autonomy; it is to make autonomy discoverable, reusable, observable, and safe enough to scale.
+          </p>
+          <div class="button-row">
+            <a class="button" href="#model">Start with the operating model</a>
+            <a class="button secondary" href="#developer-path">Jump to developer path</a>
+          </div>
+        </div>
+        <aside class="hero-card" aria-label="Questions answered">
+          <h2>The three questions this answers</h2>
+          <p>Use these as the recurring anchors for a mixed business, platform, security, and developer audience.</p>
+          <div class="answer-grid">
+            <div class="answer">
+              <span class="answer-number">1</span>
+              <div><strong>How do we govern 10,000 agents?</strong><span>Lifecycle, ownership, risk tiers, policy-as-code, automated gates, and runtime controls.</span></div>
+            </div>
+            <div class="answer">
+              <span class="answer-number">2</span>
+              <div><strong>How do we know what agents we have?</strong><span>Mandatory registration, identity binding, telemetry discovery, and continuous inventory reconciliation.</span></div>
+            </div>
+            <div class="answer">
+              <span class="answer-number">3</span>
+              <div><strong>How do we reuse agents and tools?</strong><span>Certified catalogs, versioned tool contracts, templates, eval evidence, and marketplace-style publishing.</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="problem">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Why this is different</div>
+          <h2>Agents are not just applications with a chat UI.</h2>
+          <p>They plan, call tools, use data, make decisions, and can change systems. That makes the governance problem broader than app inventory or model safety alone.</p>
+        </div>
+        <div class="metric-row">
+          <div class="metric"><strong>10k</strong><span>Potential agents across business units, teams, and citizen developer programs.</span></div>
+          <div class="metric"><strong>N</strong><span>Tool surfaces, from read-only knowledge access to high-impact operational actions.</span></div>
+          <div class="metric"><strong>24/7</strong><span>Runtime behavior that needs observability, policy decisions, and incident response.</span></div>
+          <div class="metric"><strong>1</strong><span>Enterprise evidence trail for ownership, approvals, risk, behavior, and reuse.</span></div>
+        </div>
+        <div class="grid-3" style="margin-top: 16px;">
+          <article class="card">
+            <h3>Inventory drift</h3>
+            <p>Teams create agents faster than central teams can track them. Unknown agents create unknown risk.</p>
+          </article>
+          <article class="card">
+            <h3>Duplicated capability</h3>
+            <p>Many agents repeat the same tools, prompts, and workflows because there is no certified reuse path.</p>
+          </article>
+          <article class="card">
+            <h3>Runtime opacity</h3>
+            <p>Without traces across prompts, policy, tool calls, approvals, data access, and outcomes, governance becomes manual archaeology.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="model">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Operating model</div>
+          <h2>Govern the full lifecycle, not just deployment.</h2>
+          <p>The enterprise pattern is a repeatable loop: discover, register, classify, approve, run, observe, reuse, and retire.</p>
+        </div>
+        <div class="lifecycle">
+          <article class="step">
+            <div class="step-label">Discover</div>
+            <div><h3>Find agents across builders, platforms, and telemetry</h3><p>Combine A365 or agent registry records, Foundry assets, code repositories, gateway traffic, and observability signals to detect both registered and shadow agents.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Register</div>
+            <div><h3>Bind every agent to ownership and identity</h3><p>Require business owner, technical owner, purpose, environment, managed identity, data sources, tools, model/provider, and support path before production use.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Classify</div>
+            <div><h3>Use risk tiers instead of one-size-fits-all gates</h3><p>Tier by autonomy, data sensitivity, tool power, external exposure, user population, and business criticality.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Approve</div>
+            <div><h3>Turn policy into automated gates</h3><p>Use policy-as-code, required evals, security review, tool certification, and explicit approvals for higher-risk capabilities.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Run</div>
+            <div><h3>Enforce at runtime, not only at design time</h3><p>Use identity, GenAI gateway controls, guardrails, tool-call policy, rate limits, DLP, approvals, and kill switches.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Observe</div>
+            <div><h3>Trace decisions from prompt to outcome</h3><p>Capture prompt, plan, retrieved data, policy decision, tool call, approval, cost, latency, output, and user feedback.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Reuse</div>
+            <div><h3>Publish proven agents, tools, prompts, and patterns</h3><p>Create a catalog where teams can reuse certified components with versioning, ownership, docs, and evidence.</p></div>
+          </article>
+          <article class="step">
+            <div class="step-label">Retire</div>
+            <div><h3>Remove stale agents before they become unmanaged risk</h3><p>Use lifecycle dates, usage telemetry, owner attestation, dependency checks, and deprecation policies.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="control-plane">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Enterprise control plane</div>
+          <h2>Separate portfolio governance from runtime enforcement.</h2>
+          <p>Managers need inventory, accountability, and investment visibility. Developers need clear paved roads. Security and platform teams need consistent enforcement and evidence.</p>
+        </div>
+        <div class="control-plane">
+          <article class="layer">
+            <div class="layer-name">Business governance</div>
+            <div>
+              <h3>Ownership, purpose, value, risk, and lifecycle</h3>
+              <p>Portfolio decisions live here: what the agent is for, who owns it, what risk tier it carries, and whether it should be scaled, reused, or retired.</p>
+              <div class="chip-row"><span class="chip">Business owner</span><span class="chip">Use case</span><span class="chip">Risk tier</span><span class="chip">Lifecycle state</span></div>
+            </div>
+          </article>
+          <article class="layer">
+            <div class="layer-name">Agent control plane</div>
+            <div>
+              <h3>A365, registry, catalog, metadata, and evidence</h3>
+              <p>The system of record for agents, tools, prompts, templates, versions, ownership, dependencies, and certification evidence.</p>
+              <div class="chip-row"><span class="chip">A365</span><span class="chip">Agent registry</span><span class="chip">Tool catalog</span><span class="chip">Reuse marketplace</span></div>
+            </div>
+          </article>
+          <article class="layer">
+            <div class="layer-name">Identity and access</div>
+            <div>
+              <h3>Entra-bound identities and least privilege</h3>
+              <p>Every production agent should have a managed identity, scoped permissions, conditional access rules, group-based assignment, and auditable delegation.</p>
+              <div class="chip-row"><span class="chip">Entra ID</span><span class="chip">Managed identity</span><span class="chip">RBAC</span><span class="chip">Conditional access</span></div>
+            </div>
+          </article>
+          <article class="layer">
+            <div class="layer-name">Runtime enforcement</div>
+            <div>
+              <h3>Gateway, guardrails, policy, approvals, and kill switch</h3>
+              <p>Runtime controls inspect requests, model outputs, retrieved data, and tool calls before sensitive data leaves or side effects happen.</p>
+              <div class="chip-row"><span class="chip">Foundry</span><span class="chip">GenAI gateway</span><span class="chip">Guardrails</span><span class="chip">Tool policy</span><span class="chip">DLP</span></div>
+            </div>
+          </article>
+          <article class="layer">
+            <div class="layer-name">Assurance and operations</div>
+            <div>
+              <h3>Evals, red teams, observability, incidents, and cost</h3>
+              <p>Continuous assurance proves the agent still behaves as intended after model changes, tool changes, prompt changes, and real-world usage.</p>
+              <div class="chip-row"><span class="chip">Foundry evals</span><span class="chip">Observability</span><span class="chip">Audit</span><span class="chip">SRE</span><span class="chip">FinOps</span></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="inventory">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Inventory and ownership</div>
+          <h2>Knowing what agents you have requires both registration and detection.</h2>
+          <p>A registry tells you what should exist. Telemetry and gateway logs tell you what actually exists.</p>
+        </div>
+        <div class="grid-2">
+          <article class="panel card">
+            <h3>Minimum agent passport</h3>
+            <ul>
+              <li>Business owner, technical owner, and support contact.</li>
+              <li>Purpose, users, environment, lifecycle state, and value hypothesis.</li>
+              <li>Managed identity, model/provider, data sources, tools, and permissions.</li>
+              <li>Risk tier, required approvals, eval suite, guardrails, and audit retention.</li>
+              <li>Dependencies, reusable components, version, and retirement date.</li>
+            </ul>
+          </article>
+          <article class="panel card">
+            <h3>Continuous reconciliation</h3>
+            <ul>
+              <li>Compare registry records to Foundry assets, repositories, gateway traffic, and logs.</li>
+              <li>Flag agents with no owner, stale owner attestation, or unapproved tools.</li>
+              <li>Detect production traffic from development or unregistered agents.</li>
+              <li>Report portfolio health by business unit, risk tier, cost, and reuse.</li>
+            </ul>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>Management answer:</strong> we know what agents we have because every production agent has an identity-bound passport, and the platform continuously reconciles declared inventory against runtime reality.
+        </div>
+      </div>
+    </section>
+
+    <section id="risk">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Risk-based governance</div>
+          <h2>Use proportionate controls so low-risk agents can move quickly.</h2>
+          <p>Governance scales when controls are mapped to risk, not applied uniformly to every experiment.</p>
+        </div>
+        <table class="risk-table">
+          <thead><tr><th>Tier</th><th>Typical agent</th><th>Required controls</th><th>Approval model</th></tr></thead>
+          <tbody>
+            <tr><td>Tier 0</td><td>Personal productivity, no sensitive data, no tools.</td><td>Registration, usage policy, basic logging.</td><td>Self-service.</td></tr>
+            <tr><td>Tier 1</td><td>Knowledge assistant over approved internal content.</td><td>Owner, data classification, eval baseline, content safety, observability.</td><td>Team owner approval.</td></tr>
+            <tr><td>Tier 2</td><td>Agent with read-only business system tools.</td><td>Managed identity, scoped RBAC, gateway policy, regression evals, audit trail.</td><td>Business and platform approval.</td></tr>
+            <tr><td>Tier 3</td><td>Agent with write actions or customer-impacting workflows.</td><td>Human approval for high-impact actions, tool certification, red-team tests, incident runbook, kill switch.</td><td>Security, compliance, and business approval.</td></tr>
+            <tr><td>Tier 4</td><td>Autonomous operational agent for critical systems.</td><td>Formalized policy, strict budgets, blast-radius controls, continuous monitoring, change management, executive risk acceptance.</td><td>Central governance board.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="tool-reuse">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Reuse and marketplace</div>
+          <h2>Govern tools as products, not one-off code snippets.</h2>
+          <p>The fastest way to scale safely is to make the approved path easier than rebuilding. That means certified tools, reusable templates, and clear ownership.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>Certified tool catalog</h3>
+            <p>Each tool has an owner, schema, permissions, policies, examples, evals, version, changelog, and deprecation plan.</p>
+          </article>
+          <article class="card">
+            <h3>Reusable agent patterns</h3>
+            <p>Publish golden patterns for knowledge agents, workflow agents, approval-based agents, and operational agents.</p>
+          </article>
+          <article class="card">
+            <h3>Evidence travels with components</h3>
+            <p>Reuse includes proof: eval scores, red-team results, policy coverage, data classification, and known limitations.</p>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>Developer answer:</strong> reuse works when tools and agents are published like internal products: discoverable, versioned, documented, tested, owned, and policy-ready.
+        </div>
+      </div>
+    </section>
+
+    <section id="runtime">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Runtime enforcement</div>
+          <h2>Design-time review is not enough for agentic systems.</h2>
+          <p>Runtime controls must see the full path: user request, prompt, retrieved context, model output, planned action, tool call, approval, and result.</p>
+        </div>
+        <div class="architecture-map">
+          <div class="map-grid">
+            <div class="map-node"><span class="map-label">Request</span><strong>User or workflow trigger</strong><p>Authenticated user, business process, or scheduled event.</p></div>
+            <div class="map-node"><span class="map-label">Reason</span><strong>Agent runtime</strong><p>Model, prompt, memory, retrieval, planning, and tool selection.</p></div>
+            <div class="map-node"><span class="map-label">Check</span><strong>Policy and guardrails</strong><p>Safety, DLP, data boundaries, jailbreak checks, and action policy.</p></div>
+            <div class="map-node"><span class="map-label">Approve</span><strong>Human or automated gate</strong><p>Exact approval for high-impact actions, budgets, and exceptions.</p></div>
+            <div class="map-node"><span class="map-label">Execute</span><strong>Governed tool gateway</strong><p>Revalidate identity, scope, policy, approval, and audit before side effects.</p></div>
+          </div>
+          <div class="callout">
+            Runtime enforcement should be close to the side effect. If a tool can change a system, the gateway must re-check authorization, policy, approval, and blast radius even if the agent already checked earlier.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="assurance">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Evaluation and observability</div>
+          <h2>Trust is maintained through continuous evidence.</h2>
+          <p>Evals and observability should become release gates, operational dashboards, and audit evidence, not ad hoc notebooks.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>Before release</h3>
+            <ul>
+              <li>Scenario and task-completion evals.</li>
+              <li>Safety, jailbreak, and data-leakage tests.</li>
+              <li>Tool-call accuracy and policy coverage.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>During runtime</h3>
+            <ul>
+              <li>Prompt, plan, policy, tool, approval, and outcome traces.</li>
+              <li>Latency, cost, error, escalation, and fallback metrics.</li>
+              <li>Alerts for drift, anomalous tool usage, and policy failures.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h3>After change</h3>
+            <ul>
+              <li>Regression evals on model, prompt, tool, and policy changes.</li>
+              <li>Owner attestation and risk-tier review.</li>
+              <li>Incident review and catalog evidence updates.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="developer-path">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Developer golden path</div>
+          <h2>Make the governed path the easiest path.</h2>
+          <p>Developers should not have to reverse-engineer governance. The platform should provide templates, approved tools, policy checks, and automated gates.</p>
+        </div>
+        <table class="stack-table">
+          <thead><tr><th>Step</th><th>Developer action</th><th>Platform support</th></tr></thead>
+          <tbody>
+            <tr><td>1. Start</td><td>Select a certified agent template.</td><td>Foundry toolbox, sample repos, approved architecture patterns.</td></tr>
+            <tr><td>2. Register</td><td>Create the agent passport and bind owner, purpose, and environment.</td><td>A365 or agent registry workflow with required metadata.</td></tr>
+            <tr><td>3. Attach identity</td><td>Use managed identity and request scoped permissions.</td><td>Entra groups, RBAC workflows, conditional access, access review.</td></tr>
+            <tr><td>4. Choose tools</td><td>Reuse certified tools before building new ones.</td><td>Tool catalog, schemas, policy requirements, versioning, examples.</td></tr>
+            <tr><td>5. Add guardrails</td><td>Declare input, retrieval, output, and tool-call policies.</td><td>GenAI gateway, content filters, DLP, policy-as-code, approval gates.</td></tr>
+            <tr><td>6. Run evals</td><td>Prove the agent meets quality, safety, and tool-use thresholds.</td><td>Foundry evals, regression suites, adversarial tests, release gates.</td></tr>
+            <tr><td>7. Deploy</td><td>Promote through environments with evidence attached.</td><td>CI/CD gates, audit records, runtime policy, observability setup.</td></tr>
+            <tr><td>8. Operate</td><td>Monitor behavior, cost, incidents, feedback, and drift.</td><td>Application Insights, traces, dashboards, alerts, owner attestation.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="roles">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Roles and accountability</div>
+          <h2>Agent governance needs clear ownership across business and engineering.</h2>
+          <p>Central teams enable and enforce. Business and product owners remain accountable for purpose, value, and acceptable risk.</p>
+        </div>
+        <div class="persona-grid">
+          <article class="role"><strong>Business owner</strong><p>Defines purpose, value, acceptable risk, user scope, and lifecycle.</p></article>
+          <article class="role"><strong>Technical owner</strong><p>Owns implementation, dependencies, tool use, evals, and operations.</p></article>
+          <article class="role"><strong>Platform team</strong><p>Provides registry, templates, gateway, observability, and paved roads.</p></article>
+          <article class="role"><strong>Security and compliance</strong><p>Defines policies, risk tiers, exceptions, audit needs, and guardrails.</p></article>
+          <article class="role"><strong>Tool owner</strong><p>Certifies tool contracts, permissions, tests, versions, and deprecation.</p></article>
+          <article class="role"><strong>Data owner</strong><p>Approves data use, classification, retention, and DLP requirements.</p></article>
+          <article class="role"><strong>SRE or operations</strong><p>Owns runtime health, incidents, alerts, cost, and reliability.</p></article>
+          <article class="role"><strong>Governance board</strong><p>Sets standards, handles high-risk approvals, and reviews portfolio health.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Maturity roadmap</div>
+          <h2>Start with visibility, then add automation, then scale reuse.</h2>
+          <p>The first milestone is not perfect policy. It is a trusted inventory and a paved road that teams actually want to use.</p>
+        </div>
+        <div class="roadmap">
+          <article class="phase">
+            <span class="phase-label">Crawl</span>
+            <h3>Inventory and minimum controls</h3>
+            <ul>
+              <li>Define agent passport and risk tiers.</li>
+              <li>Inventory known agents and tools.</li>
+              <li>Require owner, identity, and basic logging.</li>
+              <li>Publish initial policy and approved patterns.</li>
+            </ul>
+          </article>
+          <article class="phase">
+            <span class="phase-label">Walk</span>
+            <h3>Automated gates and runtime policy</h3>
+            <ul>
+              <li>Adopt gateway controls for tool calls.</li>
+              <li>Make evals part of release promotion.</li>
+              <li>Launch reusable tool catalog.</li>
+              <li>Connect observability to portfolio reporting.</li>
+            </ul>
+          </article>
+          <article class="phase">
+            <span class="phase-label">Run</span>
+            <h3>Portfolio optimization and reuse at scale</h3>
+            <ul>
+              <li>Automate drift detection and owner attestation.</li>
+              <li>Certify agent templates and tool products.</li>
+              <li>Use risk-based automated approvals.</li>
+              <li>Measure reuse, cost, safety, and business impact.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell">
+        <div class="closing">
+          <h2>The target state: every agent is known, owned, risk-tiered, observable, and reusable.</h2>
+          <p>That is how enterprises move from isolated agent experiments to a governed agent ecosystem.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
