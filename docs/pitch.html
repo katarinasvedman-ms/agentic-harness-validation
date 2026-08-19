@@ -442,6 +442,18 @@
       color: var(--cp-text-muted);
       font-size: 14px;
     }
+    .table-block {
+      margin-top: 24px;
+    }
+    .table-block h3 {
+      margin-bottom: 6px;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+    .table-block > p {
+      margin-bottom: 14px;
+      color: var(--cp-text-muted);
+    }
     .tech-table th, .tech-table td {
       padding: 15px 16px;
       border-bottom: 1px solid var(--cp-border);
@@ -741,18 +753,39 @@
             The demo separates entrypoints and agent runtime from deterministic verification, durable governance state, and gateway-enforced side effects.
           </figcaption>
         </figure>
-        <table class="tech-table">
-          <thead><tr><th>Diagram area</th><th>Technology</th><th>Responsibility</th></tr></thead>
-          <tbody>
-            <tr><td>Entrypoints</td><td>AI Foundry invocations + governance console</td><td>Start agent runs and expose approval, audit, and runtime views without granting direct tool access.</td></tr>
-            <tr><td>Agent runtime</td><td>Governed Agent Host + Console BFF</td><td>Run the .NET service boundary for agent execution, approval coordination, and operator-facing views.</td></tr>
-            <tr><td>Deterministic workflow</td><td>Execute / resume orchestration</td><td>Keep long-running incident handling replayable, pausable for approval, and resumable after governance decisions.</td></tr>
-            <tr><td>Governance boundary</td><td>Plan Verifier CLI + Governed Tool Gateway</td><td>Verify selected plan invariants before execution and revalidate policy, approval, audit, and scope before side effects.</td></tr>
-            <tr><td>Governance state</td><td>Audit, budget, and approval stores</td><td>Persist the evidence trail that binds plans, approvals, budgets, tool decisions, and execution outcomes.</td></tr>
-            <tr><td>Incident simulator</td><td>payments-api metrics, logs, and writes</td><td>Provide a bounded target system where the demo can show useful actions without reaching production systems.</td></tr>
-            <tr><td>Fidelity ledger</td><td>Kept, collapsed, and dropped surfaces</td><td>Make the demo boundary explicit: what is production-representative, what is simplified, and what is intentionally out of scope.</td></tr>
-          </tbody>
-        </table>
+        <div class="table-block">
+          <h3>Architecture areas</h3>
+          <p>The diagram shows runtime boundaries and control responsibilities.</p>
+          <table class="tech-table">
+            <thead><tr><th>Diagram area</th><th>Technology</th><th>Responsibility</th></tr></thead>
+            <tbody>
+              <tr><td>Entrypoints</td><td>AI Foundry invocations + governance console</td><td>Start agent runs and expose approval, audit, and runtime views without granting direct tool access.</td></tr>
+              <tr><td>Agent runtime</td><td>Governed Agent Host + Console BFF</td><td>Run the .NET service boundary for agent execution, approval coordination, and operator-facing views.</td></tr>
+              <tr><td>Deterministic workflow</td><td>Execute / resume orchestration</td><td>Keep long-running incident handling replayable, pausable for approval, and resumable after governance decisions.</td></tr>
+              <tr><td>Governance boundary</td><td>Plan Verifier CLI + Governed Tool Gateway</td><td>Verify selected plan invariants before execution and revalidate policy, approval, audit, and scope before side effects.</td></tr>
+              <tr><td>Governance state</td><td>Audit, budget, and approval stores</td><td>Persist the evidence trail that binds plans, approvals, budgets, tool decisions, and execution outcomes.</td></tr>
+              <tr><td>Incident simulator</td><td>payments-api metrics, logs, and writes</td><td>Provide a bounded target system where the demo can show useful actions without reaching production systems.</td></tr>
+              <tr><td>Fidelity ledger</td><td>Kept, collapsed, and dropped surfaces</td><td>Make the demo boundary explicit: what is production-representative, what is simplified, and what is intentionally out of scope.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-block">
+          <h3>Technology stack</h3>
+          <p>The stack table names the frameworks, platforms, and assurance tools behind those boundaries.</p>
+          <table class="tech-table">
+            <thead><tr><th>Layer</th><th>Framework or platform</th><th>Role in the solution</th></tr></thead>
+            <tbody>
+              <tr><td>Managed runtime</td><td>Microsoft Foundry Hosted Agents / AI Foundry</td><td>Container hosting, endpoint, identity, isolation, scaling, and lifecycle for the hosted agent surface.</td></tr>
+              <tr><td>Inner agentic loop</td><td>GitHub Copilot SDK + Copilot CLI</td><td>Reason-act-observe turns, custom tools, streaming, context, and loop events.</td></tr>
+              <tr><td>Outer composition</td><td>Microsoft Agent Framework on .NET</td><td>Standard agent abstraction, workflow composition, and provider interoperability around the governed host.</td></tr>
+              <tr><td>Runtime governance</td><td>Microsoft Agent Governance Toolkit (AGT)</td><td>Deterministic allow, deny, or approval-required decisions plus audit and operational controls.</td></tr>
+              <tr><td>Formal assurance</td><td>TypeScript, LemmaScript, and Dafny</td><td>Prove selected deterministic plan and state-machine invariants before governed execution.</td></tr>
+              <tr><td>Infrastructure control</td><td>Microsoft Entra ID + Azure RBAC</td><td>Least-privilege identity and the physical limit on reachable operations.</td></tr>
+              <tr><td>Quality and operations</td><td>Foundry evaluations + Application Insights</td><td>Regression gates, adversarial evaluation, traces, metrics, and production assurance.</td></tr>
+              <tr><td>Research extension</td><td>Rust / Verus</td><td>Potential high-assurance runtime components after the initial demo.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
