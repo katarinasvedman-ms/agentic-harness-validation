@@ -4,6 +4,24 @@ This rehearsal is deterministic and credential-free. It demonstrates the local
 simulator and governance controls; it does **not** demonstrate a live Copilot
 session, Foundry authentication, Azure deployment, or a production system.
 
+## Opening scene
+
+Start with the incident story before showing the governance model:
+
+> Payments API goes down. An agent investigates, proposes a fix, and executes it
+> with a human approving the one step that actually touches production. Now
+> imagine the same agent, same incident, except this time there is a prompt
+> injection hidden in the diagnostic logs trying to get it to exfiltrate data to
+> an external endpoint. Same agent. Same autonomy. Completely different outcome,
+> because the system, not the model, decided what was allowed.
+
+Then make the scale transition explicit:
+
+> That is one governed agent. The harder problem is doing this consistently
+> across a portfolio you did not build and cannot fully see yet. The rest of the
+> story is how to govern, inventory, observe, and reuse agents at enterprise
+> scale.
+
 ## Setup and preflight
 
 From the repository root in PowerShell 7:
