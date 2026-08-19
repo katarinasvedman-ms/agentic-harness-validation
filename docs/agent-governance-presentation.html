@@ -284,6 +284,19 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
     }
+    .bridge {
+      padding: 28px;
+      border: 1px solid var(--cp-border);
+      border-left: 4px solid var(--cp-accent);
+      border-radius: 16px;
+      background: var(--cp-surface);
+      color: var(--cp-text-muted);
+      font-size: 20px;
+      line-height: 1.5;
+    }
+    .bridge strong {
+      color: var(--cp-text);
+    }
     .card {
       padding: 24px;
     }
@@ -674,9 +687,10 @@
       </a>
       <nav aria-label="Presentation sections">
         <a href="#problem">Problem</a>
-        <a href="#model">Model</a>
         <a href="#control-plane">Control plane</a>
-        <a href="#developer-path">Developer path</a>
+        <a href="#agent-identity">Agent ID</a>
+        <a href="#runtime">Runtime</a>
+        <a href="#assurance">Observability</a>
         <a href="#roadmap">Roadmap</a>
       </nav>
     </div>
@@ -715,6 +729,15 @@
             </div>
           </div>
         </aside>
+      </div>
+    </section>
+
+    <section>
+      <div class="shell">
+        <div class="bridge">
+          <strong>Start with one governed agent, then scale the same controls across the portfolio.</strong>
+          Agent 365 gives the estate view, Entra Agent ID makes actions traceable, runtime enforcement controls side effects, observability proves what happened, and reusable patterns make the governed path repeatable.
+        </div>
       </div>
     </section>
 
@@ -811,8 +834,8 @@
           <article class="layer">
             <div class="layer-name">Agent control plane</div>
             <div>
-              <h3>Microsoft Agent 365 registry, map, connected platforms, metadata, and evidence</h3>
-              <p>Agent 365 is the grounding control plane for the agent estate. It provides centralized visibility, lifecycle management, access governance, ownerless-agent detection, unmanaged-agent signals, and connections to external agent platforms.</p>
+              <h3>Microsoft Agent 365 registry, map, and connected platforms</h3>
+              <p>Agent 365 is the grounding control plane for the agent estate: centralized visibility, lifecycle management, access governance, ownerless-agent detection, unmanaged-agent signals, and external platform connections.</p>
               <div class="chip-row"><span class="chip">Agent 365</span><span class="chip">Agent Registry</span><span class="chip">Agent Map</span><span class="chip">Connected platforms</span></div>
             </div>
           </article>
@@ -844,6 +867,31 @@
       </div>
     </section>
 
+    <section id="microsoft-mapping">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Microsoft capability mapping</div>
+          <h2>This is an operating model with product anchors.</h2>
+          <p>The pattern is architecture-neutral, but customers should see where Microsoft capabilities fit today.</p>
+        </div>
+        <table class="stack-table">
+          <thead><tr><th>Governance capability</th><th>Microsoft mapping</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td>Inventory and control plane</td><td>Microsoft Agent 365 Agent Registry, Agent Map, Connected platforms</td><td>Know which agents exist, which are ownerless/unmanaged, where they came from, and how they are used.</td></tr>
+            <tr><td>Agent identity</td><td>Microsoft Entra Agent ID</td><td>Trace and authorize the specific agent that acted, including delegated access and revocation.</td></tr>
+            <tr><td>User and app access</td><td>Microsoft Entra ID, RBAC, Conditional Access</td><td>Control users, groups, apps, resource access, and privileged operations.</td></tr>
+            <tr><td>Runtime enforcement</td><td>Foundry controls, APIM GenAI Gateway, tool gateway, MCP policy layer, custom enforcement</td><td>Apply policy before tool calls, data movement, and side effects.</td></tr>
+            <tr><td>Data protection and compliance</td><td>Microsoft Purview</td><td>Information protection, DLP, retention, compliance, and data-risk controls.</td></tr>
+            <tr><td>Threat detection</td><td>Microsoft Defender</td><td>Detect risky or malicious agent behavior and protect agents at runtime.</td></tr>
+            <tr><td>Observability</td><td>Agent 365, Foundry observability, Application Insights, Log Analytics</td><td>Monitor activity, usage, health, quality, cost, traces, and risk signals.</td></tr>
+            <tr><td>Evaluations</td><td>Foundry evals</td><td>Gate releases and detect regressions in quality, safety, groundedness, tool use, and task completion.</td></tr>
+            <tr><td>Publishing and build plane</td><td>Copilot Studio, Microsoft Foundry</td><td>Build, test, publish, and operate agents using approved paths.</td></tr>
+            <tr><td>Policy and standards</td><td>Azure Policy, APIM policies, Purview policies</td><td>Enforce resource, traffic, data, and compliance standards.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section id="inventory">
       <div class="shell">
         <div class="section-header">
@@ -851,7 +899,7 @@
           <h2>Knowing what agents you have requires both registration and detection.</h2>
           <p>Microsoft Agent 365 Agent Registry is the first inventory surface. Telemetry, connected platforms, and gateway logs then help reconcile what is registered, unmanaged, ownerless, active, risky, or missing.</p>
         </div>
-        <div class="grid-2">
+        <div class="grid-3">
           <article class="panel card">
             <h3>Minimum agent passport</h3>
             <ul>
@@ -990,7 +1038,7 @@
           <h2>Trust is maintained through continuous evidence.</h2>
           <p>Evals and observability should become release gates, operational dashboards, and audit evidence, not ad hoc notebooks.</p>
         </div>
-        <div class="grid-3">
+        <div class="grid-2">
           <article class="card">
             <h3>Executive questions</h3>
             <ul>
@@ -1025,31 +1073,6 @@
             </ul>
           </article>
         </div>
-      </div>
-    </section>
-
-    <section id="microsoft-mapping">
-      <div class="shell">
-        <div class="section-header">
-          <div class="kicker">Microsoft capability mapping</div>
-          <h2>This is an operating model with product anchors.</h2>
-          <p>The pattern is architecture-neutral, but customers should see where Microsoft capabilities fit today.</p>
-        </div>
-        <table class="stack-table">
-          <thead><tr><th>Governance capability</th><th>Microsoft mapping</th><th>Role</th></tr></thead>
-          <tbody>
-            <tr><td>Inventory and control plane</td><td>Microsoft Agent 365 Agent Registry, Agent Map, Connected platforms</td><td>Know which agents exist, which are ownerless/unmanaged, where they came from, and how they are used.</td></tr>
-            <tr><td>Agent identity</td><td>Microsoft Entra Agent ID</td><td>Trace and authorize the specific agent that acted, including delegated access and revocation.</td></tr>
-            <tr><td>User and app access</td><td>Microsoft Entra ID, RBAC, Conditional Access</td><td>Control users, groups, apps, resource access, and privileged operations.</td></tr>
-            <tr><td>Runtime enforcement</td><td>Foundry controls, APIM GenAI Gateway, tool gateway, MCP policy layer, custom enforcement</td><td>Apply policy before tool calls, data movement, and side effects.</td></tr>
-            <tr><td>Data protection and compliance</td><td>Microsoft Purview</td><td>Information protection, DLP, retention, compliance, and data-risk controls.</td></tr>
-            <tr><td>Threat detection</td><td>Microsoft Defender</td><td>Detect risky or malicious agent behavior and protect agents at runtime.</td></tr>
-            <tr><td>Observability</td><td>Agent 365, Foundry observability, Application Insights, Log Analytics</td><td>Monitor activity, usage, health, quality, cost, traces, and risk signals.</td></tr>
-            <tr><td>Evaluations</td><td>Foundry evals</td><td>Gate releases and detect regressions in quality, safety, groundedness, tool use, and task completion.</td></tr>
-            <tr><td>Publishing and build plane</td><td>Copilot Studio, Microsoft Foundry</td><td>Build, test, publish, and operate agents using approved paths.</td></tr>
-            <tr><td>Policy and standards</td><td>Azure Policy, APIM policies, Purview policies</td><td>Enforce resource, traffic, data, and compliance standards.</td></tr>
-          </tbody>
-        </table>
       </div>
     </section>
 
