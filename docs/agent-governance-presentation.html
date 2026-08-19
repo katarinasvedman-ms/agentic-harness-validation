@@ -466,7 +466,7 @@
     }
     .roadmap {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr;
       gap: 16px;
     }
     .phase {
@@ -474,6 +474,13 @@
       border: 1px solid var(--cp-border);
       border-radius: 16px;
       background: var(--cp-bg-elevated);
+    }
+    .phase h3 {
+      margin-bottom: 8px;
+    }
+    .phase-intro {
+      max-width: 900px;
+      color: var(--cp-text-muted);
     }
     .phase-label {
       display: inline-flex;
@@ -485,6 +492,55 @@
       font-family: Consolas, "Courier New", Courier, monospace;
       font-weight: 900;
       text-transform: uppercase;
+    }
+    .phase-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .phase-meta span {
+      display: inline-flex;
+      padding: 6px 9px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text-muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .recipe-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+      padding: 0;
+      list-style: none;
+    }
+    .recipe-list li {
+      padding: 16px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+    }
+    .recipe-list strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--cp-text);
+    }
+    .recipe-list span {
+      display: block;
+      color: var(--cp-text-muted);
+    }
+    .deliverable {
+      margin: 18px 0 0;
+      padding: 14px 16px;
+      border-left: 4px solid var(--cp-accent);
+      background: var(--cp-accent-soft);
+      color: var(--cp-text-muted);
+    }
+    .deliverable strong {
+      color: var(--cp-text);
     }
     .phase ul {
       margin: 12px 0 0;
@@ -516,6 +572,7 @@
       .layer,
       .map-grid,
       .persona-grid,
+      .recipe-list,
       .roadmap {
         grid-template-columns: 1fr;
       }
@@ -898,38 +955,71 @@
         <div class="section-header">
           <div class="kicker">Maturity roadmap</div>
           <h2>Start with visibility, then add automation, then scale reuse.</h2>
-          <p>The first milestone is not perfect policy. It is a trusted inventory and a paved road that teams actually want to use.</p>
+          <p>The customer question is not only what good looks like; it is what to do on Monday morning. Treat each maturity phase as an implementation recipe with named owners, artifacts, and exit criteria.</p>
         </div>
         <div class="roadmap">
           <article class="phase">
             <span class="phase-label">Crawl</span>
             <h3>Inventory and minimum controls</h3>
-            <ul>
-              <li>Define agent passport and risk tiers.</li>
-              <li>Inventory known agents and tools.</li>
-              <li>Require owner, identity, and basic logging.</li>
-              <li>Publish initial policy and approved patterns.</li>
-            </ul>
+            <p class="phase-intro">Goal: create visibility and stop unmanaged growth. Do this before trying to build a perfect governance platform.</p>
+            <div class="phase-meta">
+              <span>Timebox: 30-60 days</span>
+              <span>Primary owners: platform + security</span>
+              <span>Audience: every agent-building team</span>
+            </div>
+            <ol class="recipe-list">
+              <li><strong>1. Name the accountable owners.</strong><span>Assign a business owner, technical owner, platform owner, security owner, and tool owner role. Publish who approves each risk tier and who responds to incidents.</span></li>
+              <li><strong>2. Define the agent passport.</strong><span>Create the mandatory metadata record: purpose, owner, users, data sources, tools, model/provider, environment, identity, risk tier, evals, guardrails, support contact, and retirement date.</span></li>
+              <li><strong>3. Create a first risk-tier rubric.</strong><span>Classify agents by autonomy, data sensitivity, tool power, external exposure, and business criticality. Keep it simple enough that teams can self-assess.</span></li>
+              <li><strong>4. Inventory known agents and tools.</strong><span>Seed the registry from A365 or your agent catalog, Foundry projects, repositories, Teams apps, Copilot extensions, Power Platform assets, gateway logs, and stakeholder interviews.</span></li>
+              <li><strong>5. Bind every production agent to identity.</strong><span>Require a managed identity or app registration, Entra group ownership, least-privilege permissions, and an access review cadence.</span></li>
+              <li><strong>6. Establish minimum runtime logging.</strong><span>Capture agent identity, user, timestamp, model/provider, data source, tool calls, policy decision, approval decision, errors, latency, and cost.</span></li>
+              <li><strong>7. Publish the first allowed patterns.</strong><span>Document approved starter patterns: knowledge agent, read-only tool agent, approval-based action agent, and prohibited patterns for early rollout.</span></li>
+              <li><strong>8. Start monthly owner attestation.</strong><span>Ask owners to confirm the agent still exists, has the right purpose, uses approved tools, and has no orphaned permissions.</span></li>
+            </ol>
+            <p class="deliverable"><strong>Exit criteria:</strong> a trusted inventory exists, every production agent has an owner and identity, high-risk unknowns are flagged, and new agents cannot go live without a passport.</p>
           </article>
           <article class="phase">
             <span class="phase-label">Walk</span>
             <h3>Automated gates and runtime policy</h3>
-            <ul>
-              <li>Adopt gateway controls for tool calls.</li>
-              <li>Make evals part of release promotion.</li>
-              <li>Launch reusable tool catalog.</li>
-              <li>Connect observability to portfolio reporting.</li>
-            </ul>
+            <p class="phase-intro">Goal: move governance from documents and meetings into repeatable platform controls.</p>
+            <div class="phase-meta">
+              <span>Timebox: 60-120 days</span>
+              <span>Primary owners: platform engineering + app teams</span>
+              <span>Audience: product teams and developers</span>
+            </div>
+            <ol class="recipe-list">
+              <li><strong>1. Put tool calls behind a gateway.</strong><span>Route sensitive tool calls through a GenAI gateway or governed tool gateway that checks identity, scope, policy, approval, rate limits, and audit requirements.</span></li>
+              <li><strong>2. Turn risk tiers into policy-as-code.</strong><span>Encode what each tier requires: approved data sources, allowed models, required guardrails, human approval thresholds, eval minimums, and logging retention.</span></li>
+              <li><strong>3. Make evals a release gate.</strong><span>Use Foundry evals or equivalent suites for task success, groundedness, tool-call correctness, safety, jailbreak resistance, data leakage, and regression after prompt/model/tool changes.</span></li>
+              <li><strong>4. Certify the first reusable tools.</strong><span>Pick the top duplicated tools, define schemas and permission scopes, add tests and telemetry, assign owners, and publish them in a catalog with usage examples.</span></li>
+              <li><strong>5. Add approval workflows for side effects.</strong><span>Require exact approval for high-impact writes, customer communications, financial actions, privilege changes, and production operations.</span></li>
+              <li><strong>6. Connect observability to portfolio views.</strong><span>Create dashboards by business unit, owner, risk tier, tool usage, cost, policy failures, eval status, incidents, and reuse.</span></li>
+              <li><strong>7. Create exception handling.</strong><span>Define how teams request exceptions, who approves them, when they expire, and how they are visible in audit and owner attestation.</span></li>
+              <li><strong>8. Build the developer golden path.</strong><span>Provide templates, CI/CD checks, registry automation, sample policies, approved tools, eval harnesses, and deployment gates.</span></li>
+            </ol>
+            <p class="deliverable"><strong>Exit criteria:</strong> new production agents pass automated gates, sensitive tools are gateway-controlled, eval evidence is attached to releases, and portfolio dashboards show live governance health.</p>
           </article>
           <article class="phase">
             <span class="phase-label">Run</span>
             <h3>Portfolio optimization and reuse at scale</h3>
-            <ul>
-              <li>Automate drift detection and owner attestation.</li>
-              <li>Certify agent templates and tool products.</li>
-              <li>Use risk-based automated approvals.</li>
-              <li>Measure reuse, cost, safety, and business impact.</li>
-            </ul>
+            <p class="phase-intro">Goal: make governance scalable, measurable, and reusable across thousands of agents.</p>
+            <div class="phase-meta">
+              <span>Timebox: 120+ days</span>
+              <span>Primary owners: governance board + platform product team</span>
+              <span>Audience: enterprise-wide agent builders</span>
+            </div>
+            <ol class="recipe-list">
+              <li><strong>1. Automate drift detection.</strong><span>Continuously compare registry metadata with runtime reality: new tools, permission changes, model changes, prompt changes, data source changes, and unexplained traffic.</span></li>
+              <li><strong>2. Productize agent templates.</strong><span>Certify reusable templates for knowledge retrieval, workflow automation, approval-based actions, service desk, engineering operations, and customer support.</span></li>
+              <li><strong>3. Mature the tool marketplace.</strong><span>Measure adoption, deprecate duplicate tools, require semantic versioning, publish SLAs, and make certified tools easier to use than custom integrations.</span></li>
+              <li><strong>4. Use risk-based automated approvals.</strong><span>Auto-approve low-risk agents that meet policy, route medium-risk agents to business/platform approval, and reserve central review for high-impact autonomy.</span></li>
+              <li><strong>5. Add continuous assurance.</strong><span>Run scheduled regression evals, red-team scenarios, policy simulations, incident replay, and model-change impact analysis.</span></li>
+              <li><strong>6. Optimize the portfolio.</strong><span>Find underused, expensive, duplicative, risky, or ownerless agents. Retire or consolidate them and redirect teams to certified reusable patterns.</span></li>
+              <li><strong>7. Measure business outcomes.</strong><span>Track adoption, cycle-time reduction, deflection, quality, safety incidents, cost per task, reuse rate, and risk posture by business unit.</span></li>
+              <li><strong>8. Feed learnings back into policy.</strong><span>Use incidents, eval failures, user feedback, and operational metrics to update templates, guardrails, policies, and certification requirements.</span></li>
+            </ol>
+            <p class="deliverable"><strong>Exit criteria:</strong> governance scales through automation, reuse becomes measurable, risky drift is detected automatically, and the enterprise can manage agents as a living portfolio.</p>
           </article>
         </div>
       </div>
