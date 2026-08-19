@@ -1195,14 +1195,106 @@
               <span>Audience: product teams and developers</span>
             </div>
             <ol class="recipe-list">
-              <li><strong>1. Put tool calls behind a gateway.</strong><span>Route sensitive tool calls through a GenAI gateway or governed tool gateway that checks identity, scope, policy, approval, rate limits, and audit requirements.</span></li>
-              <li><strong>2. Turn risk tiers into policy-as-code.</strong><span>Encode what each tier requires: approved data sources, allowed models, required guardrails, human approval thresholds, eval minimums, and logging retention.</span></li>
-              <li><strong>3. Make evals a release gate.</strong><span>Use Foundry evals or equivalent suites for task success, groundedness, tool-call correctness, safety, jailbreak resistance, data leakage, and regression after prompt/model/tool changes.</span></li>
-              <li><strong>4. Certify the first reusable tools.</strong><span>Pick the top duplicated tools, define schemas and permission scopes, add tests and telemetry, assign owners, and publish them in a catalog with usage examples.</span></li>
-              <li><strong>5. Add approval workflows for side effects.</strong><span>Require exact approval for high-impact writes, customer communications, financial actions, privilege changes, and production operations.</span></li>
-              <li><strong>6. Connect observability to portfolio views.</strong><span>Create dashboards by business unit, owner, risk tier, tool usage, cost, policy failures, eval status, incidents, and reuse.</span></li>
-              <li><strong>7. Create exception handling.</strong><span>Define how teams request exceptions, who approves them, when they expire, and how they are visible in audit and owner attestation.</span></li>
-              <li><strong>8. Build the developer golden path.</strong><span>Provide templates, CI/CD checks, registry automation, sample policies, approved tools, eval harnesses, and deployment gates.</span></li>
+              <li>
+                <strong>1. Put tool calls behind a gateway.</strong><span>Route sensitive tool calls through a GenAI gateway or governed tool gateway that checks identity, scope, policy, approval, rate limits, and audit requirements.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Start with tools that can write, send, delete, change access, spend money, or call external systems. Put those behind a mediated API layer before expanding to lower-risk tools.</p>
+                  <ul>
+                    <li>Onboard AI model, agent, MCP, and A2A endpoints through an AI gateway where possible. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities in Azure API Management</a>.</li>
+                    <li>Check caller identity, agent identity, tool name, resource scope, risk tier, approval requirement, and rate/token budget before execution.</li>
+                    <li>Log allow/deny/approval-required decisions as audit events, not only API access logs.</li>
+                    <li>For Foundry agents, align endpoint access with Foundry roles and agent scopes. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Microsoft Foundry RBAC</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>2. Turn risk tiers into policy-as-code.</strong><span>Encode what each tier requires: approved data sources, allowed models, required guardrails, human approval thresholds, eval minimums, and logging retention.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Write policy in a form that can be evaluated automatically in CI/CD and again at runtime.</p>
+                  <ul>
+                    <li>Define policy requirements per tier: allowed data classes, allowed tools, approval requirements, eval thresholds, logging retention, and exception rules.</li>
+                    <li>Use Azure Policy for Azure resource standards and compliance reporting where applicable. Source: <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Overview of Azure Policy</a>.</li>
+                    <li>Use gateway policy for runtime traffic controls such as authentication, authorization, quotas, routing, logging, and token limits. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities</a>.</li>
+                    <li>Keep policy decisions explainable: every denial or approval pause should cite the rule, agent, user, tool, target resource, and evidence.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>3. Make evals a release gate.</strong><span>Use Foundry evals or equivalent suites for task success, groundedness, tool-call correctness, safety, jailbreak resistance, data leakage, and regression after prompt/model/tool changes.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Each agent needs a repeatable eval suite before production and after changes to the prompt, model, tools, data sources, policies, or blueprint.</p>
+                  <ul>
+                    <li>Use Foundry observability capabilities for evaluation, monitoring, and tracing. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/observability">Observability in Generative AI</a>.</li>
+                    <li>Include quality metrics, RAG metrics, safety/security metrics, and agent-specific metrics such as tool-call accuracy and task completion.</li>
+                    <li>Add Azure AI Content Safety or equivalent checks for harmful user-generated and AI-generated content. Source: <a href="https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview">Azure AI Content Safety overview</a>.</li>
+                    <li>Store eval run ID, dataset version, threshold, pass/fail, owner, and release decision in the agent passport.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>4. Certify the first reusable tools.</strong><span>Pick the top duplicated tools, define schemas and permission scopes, add tests and telemetry, assign owners, and publish them in a catalog with usage examples.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Start with the tools many agents duplicate: ticket lookup, knowledge search, CRM read, incident status, message draft, approval request, or service restart.</p>
+                  <ul>
+                    <li>For each tool, publish owner, purpose, schema, authentication method, required roles, allowed scopes, side-effect class, idempotency behavior, test evidence, and deprecation path.</li>
+                    <li>Expose existing REST APIs as MCP servers only after ownership, auth, logging, and policy are clear. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities</a>.</li>
+                    <li>Use Foundry RBAC and Entra ownership to separate builders, consumers, and privileged publishers. Sources: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a> and <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Entra app owners</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>5. Add approval workflows for side effects.</strong><span>Require exact approval for high-impact writes, customer communications, financial actions, privilege changes, and production operations.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Approval should bind to the exact proposed action, not a broad permission like "let the agent proceed."</p>
+                  <ul>
+                    <li>Capture approver, role, timestamp, expiry, target resource, tool name, normalized arguments, risk tier, and action digest.</li>
+                    <li>Require approval for Tier 3+ actions such as production writes, customer-visible messages, financial transactions, access changes, and destructive operations.</li>
+                    <li>Revalidate the approval at the gateway immediately before the side effect; do not trust only the agent-side precheck.</li>
+                    <li>Use Entra groups or app roles to define who can approve each class of action. Source: <a href="https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-app-owners">Entra application ownership</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>6. Connect observability to portfolio views.</strong><span>Create dashboards by business unit, owner, risk tier, tool usage, cost, policy failures, eval status, incidents, and reuse.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Operational telemetry should roll up into portfolio governance, not just individual application dashboards.</p>
+                  <ul>
+                    <li>Trace LLM calls, retrieval, tool invocations, agent decisions, latency, token consumption, errors, quality scores, and policy decisions. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/observability">Foundry observability</a>.</li>
+                    <li>Use Application Insights/Azure Monitor for operational dashboards, alerts, traces, and logs. Source: <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights overview</a>.</li>
+                    <li>Dashboard by owner, business unit, risk tier, blueprint, tool, model/provider, environment, and exception status.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>7. Create exception handling.</strong><span>Define how teams request exceptions, who approves them, when they expire, and how they are visible in audit and owner attestation.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>Exceptions are normal, but unmanaged exceptions become the new shadow estate.</p>
+                  <ul>
+                    <li>Require exception owner, policy waived, business justification, risk acceptance, compensating controls, expiry date, and renewal process.</li>
+                    <li>Display active exceptions in the passport and portfolio dashboard so they are visible during attestation.</li>
+                    <li>Use the governance team's authority and compliance-monitoring function as the operating model. Source: <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Build a cloud governance team</a>.</li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <strong>8. Build the developer golden path.</strong><span>Provide templates, CI/CD checks, registry automation, sample policies, approved tools, eval harnesses, and deployment gates.</span>
+                <details>
+                  <summary>Read more</summary>
+                  <p>The golden path should make the compliant path faster than the custom path.</p>
+                  <ul>
+                    <li>Provide starter templates for each approved pattern, prewired to registry metadata, managed identity, logging, evals, and gateway policy.</li>
+                    <li>Use Foundry project roles to separate project managers, builders, publishers, and consumers. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC enterprise mappings</a>.</li>
+                    <li>Automate passport creation, role checks, eval execution, and release evidence collection in CI/CD.</li>
+                  </ul>
+                </details>
+              </li>
             </ol>
             <p class="deliverable"><strong>Exit criteria:</strong> new production agents pass automated gates, sensitive tools are gateway-controlled, eval evidence is attached to releases, and portfolio dashboards show live governance health.</p>
           </article>
@@ -1216,14 +1308,14 @@
               <span>Audience: enterprise-wide agent builders</span>
             </div>
             <ol class="recipe-list">
-              <li><strong>1. Automate drift detection.</strong><span>Continuously compare registry metadata with runtime reality: new tools, permission changes, model changes, prompt changes, data source changes, and unexplained traffic.</span></li>
-              <li><strong>2. Productize agent templates.</strong><span>Certify reusable templates for knowledge retrieval, workflow automation, approval-based actions, service desk, engineering operations, and customer support.</span></li>
-              <li><strong>3. Mature the tool marketplace.</strong><span>Measure adoption, deprecate duplicate tools, require semantic versioning, publish SLAs, and make certified tools easier to use than custom integrations.</span></li>
-              <li><strong>4. Use risk-based automated approvals.</strong><span>Auto-approve low-risk agents that meet policy, route medium-risk agents to business/platform approval, and reserve central review for high-impact autonomy.</span></li>
-              <li><strong>5. Add continuous assurance.</strong><span>Run scheduled regression evals, red-team scenarios, policy simulations, incident replay, and model-change impact analysis.</span></li>
-              <li><strong>6. Optimize the portfolio.</strong><span>Find underused, expensive, duplicative, risky, or ownerless agents. Retire or consolidate them and redirect teams to certified reusable patterns.</span></li>
-              <li><strong>7. Measure business outcomes.</strong><span>Track adoption, cycle-time reduction, deflection, quality, safety incidents, cost per task, reuse rate, and risk posture by business unit.</span></li>
-              <li><strong>8. Feed learnings back into policy.</strong><span>Use incidents, eval failures, user feedback, and operational metrics to update templates, guardrails, policies, and certification requirements.</span></li>
+              <li><strong>1. Automate drift detection.</strong><span>Continuously compare registry metadata with runtime reality: new tools, permission changes, model changes, prompt changes, data source changes, and unexplained traffic.</span><details><summary>Read more</summary><p>Turn owner attestation into automated reconciliation.</p><ul><li>Compare passport metadata with Foundry projects, agent scopes, Entra app owners, RBAC assignments, Copilot Studio sharing, gateway logs, and telemetry.</li><li>Alert on new tools, changed permissions, model/provider changes, unregistered endpoints, stale owners, expired exceptions, and traffic from nonproduction agents.</li><li>Use Azure Policy and Azure Monitor where Azure resources are involved. Sources: <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy</a> and <a href="https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview">Application Insights</a>.</li></ul></details></li>
+              <li><strong>2. Productize agent templates.</strong><span>Certify reusable templates for knowledge retrieval, workflow automation, approval-based actions, service desk, engineering operations, and customer support.</span><details><summary>Read more</summary><p>A template is reusable only if teams can adopt it safely without rediscovering governance decisions.</p><ul><li>Each template should include passport defaults, allowed tools, RBAC pattern, eval suite, logging hooks, gateway policy, documentation, known limitations, and owner.</li><li>Version templates and publish migration guidance when policies, models, or tool contracts change.</li><li>Use Foundry project and role patterns for builder/publisher separation. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/rbac-foundry">Foundry RBAC</a>.</li></ul></details></li>
+              <li><strong>3. Mature the tool marketplace.</strong><span>Measure adoption, deprecate duplicate tools, require semantic versioning, publish SLAs, and make certified tools easier to use than custom integrations.</span><details><summary>Read more</summary><p>Move from a list of tools to a governed internal product marketplace.</p><ul><li>For each tool product, track owner, schema, auth model, permission scope, side-effect class, SLA, version, usage count, incident count, eval/test evidence, and deprecation status.</li><li>Use API gateway capabilities to govern APIs and tools consistently. Source: <a href="https://learn.microsoft.com/en-us/azure/api-management/genai-gateway-capabilities">AI gateway capabilities</a>.</li><li>Measure duplicate custom tools and redirect teams to certified equivalents.</li></ul></details></li>
+              <li><strong>4. Use risk-based automated approvals.</strong><span>Auto-approve low-risk agents that meet policy, route medium-risk agents to business/platform approval, and reserve central review for high-impact autonomy.</span><details><summary>Read more</summary><p>Automation should reduce review load without hiding risk.</p><ul><li>Auto-approve Tier 0-1 agents only when passport, identity, logging, allowed data, allowed tools, and eval minimums pass.</li><li>Route Tier 2 to business/platform approval and Tier 3-4 to security/compliance or governance board review.</li><li>Use Azure Policy compliance and gateway policy evidence as machine-checkable inputs. Source: <a href="https://learn.microsoft.com/en-us/azure/governance/policy/overview">Azure Policy overview</a>.</li></ul></details></li>
+              <li><strong>5. Add continuous assurance.</strong><span>Run scheduled regression evals, red-team scenarios, policy simulations, incident replay, and model-change impact analysis.</span><details><summary>Read more</summary><p>Assurance should continue after deployment because models, tools, prompts, data, and user behavior change.</p><ul><li>Schedule evals and monitoring for quality, safety, tool-call accuracy, task completion, harmful content, latency, cost, and errors. Source: <a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/observability">Foundry observability</a>.</li><li>Replay prior incidents and policy denials after major prompt, model, tool, or gateway changes.</li><li>Use Content Safety or equivalent checks for harmful content categories. Source: <a href="https://learn.microsoft.com/en-us/azure/ai-services/content-safety/overview">Azure AI Content Safety</a>.</li></ul></details></li>
+              <li><strong>6. Optimize the portfolio.</strong><span>Find underused, expensive, duplicative, risky, or ownerless agents. Retire or consolidate them and redirect teams to certified reusable patterns.</span><details><summary>Read more</summary><p>Portfolio optimization turns governance data into management action.</p><ul><li>Rank agents by usage, cost, risk tier, exception count, stale attestation, eval failures, incident count, and duplication.</li><li>Retire agents with no owner, no usage, expired purpose, unsupported identity, or failed controls.</li><li>Use CAF tagging and naming strategy to keep cost, ownership, environment, and lifecycle visible. Sources: <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-tagging">CAF tagging</a> and <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming">CAF naming</a>.</li></ul></details></li>
+              <li><strong>7. Measure business outcomes.</strong><span>Track adoption, cycle-time reduction, deflection, quality, safety incidents, cost per task, reuse rate, and risk posture by business unit.</span><details><summary>Read more</summary><p>Executives need outcome metrics, not only technical compliance metrics.</p><ul><li>Track value: tasks completed, hours saved, cycle-time reduction, service deflection, quality improvement, and business KPI impact.</li><li>Track risk: policy failures, approval pauses, incidents, harmful-content flags, exception volume, and unresolved drift.</li><li>Track scale: reuse rate, certified tool adoption, template adoption, cost per task, and active agents by business unit.</li></ul></details></li>
+              <li><strong>8. Feed learnings back into policy.</strong><span>Use incidents, eval failures, user feedback, and operational metrics to update templates, guardrails, policies, and certification requirements.</span><details><summary>Read more</summary><p>The governance system should learn from production evidence.</p><ul><li>Review incidents, eval regressions, denied actions, exception trends, owner attestations, and user feedback monthly.</li><li>Update risk-tier criteria, gateway policies, eval thresholds, approved templates, tool certification, and retirement criteria.</li><li>Use the CAF governance cycle as the operating pattern: assess risks, document policy, enforce policy, monitor compliance, then update. Source: <a href="https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/govern/build-cloud-governance-team">Build a cloud governance team</a>.</li></ul></details></li>
             </ol>
             <p class="deliverable"><strong>Exit criteria:</strong> governance scales through automation, reuse becomes measurable, risky drift is detected automatically, and the enterprise can manage agents as a living portfolio.</p>
           </article>
