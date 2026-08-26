@@ -388,46 +388,159 @@
       font-size: 13px;
       font-weight: 700;
     }
-    .operating-view {
+    .governance-story {
       padding: 28px;
       border: 1px solid var(--cp-border);
       border-radius: 16px;
       background: var(--cp-surface);
     }
-    .operating-view-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-    }
-    .operating-layer {
-      min-height: 168px;
-      padding: 18px;
+    .accountability-rail,
+    .evidence-rail {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 18px;
       border: 1px solid var(--cp-border);
       border-radius: 0.625rem;
       background: var(--cp-bg-elevated);
     }
-    .operating-layer strong {
-      display: block;
-      margin-bottom: 12px;
+    .accountability-rail strong,
+    .evidence-rail strong {
+      flex: 0 0 auto;
       color: var(--cp-accent);
       font-family: Consolas, "Courier New", Courier, monospace;
       font-size: 13px;
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
-    .operating-layer ul {
-      margin: 0;
-      padding-left: 20px;
+    .accountability-rail span,
+    .evidence-rail span {
       color: var(--cp-text-muted);
+      text-align: right;
     }
-    .operating-layer li {
-      margin-bottom: 7px;
+    .action-flow {
+      display: grid;
+      grid-template-columns: minmax(190px, 0.8fr) 44px minmax(320px, 1.4fr) 44px minmax(190px, 0.8fr);
+      gap: 10px;
+      align-items: center;
+      margin: 20px 0;
     }
+    .flow-card,
+    .governance-gate,
+    .outcome {
+      padding: 20px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-bg-elevated);
+    }
+    .flow-card h3,
+    .governance-gate h3,
+    .outcome h3 {
+      margin-bottom: 8px;
+      font-size: 19px;
+    }
+    .flow-card p,
+    .governance-gate > p,
+    .outcome p {
+      margin: 0;
+      color: var(--cp-text-muted);
+      font-size: 14px;
+    }
+    .action-example {
+      display: block;
+      margin-top: 14px;
+      padding: 10px;
+      border-left: 3px solid var(--cp-accent);
+      background: var(--cp-accent-soft);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .flow-arrow {
+      color: var(--cp-accent);
+      font-size: 30px;
+      font-weight: 900;
+      text-align: center;
+    }
+    .governance-gate {
+      border-color: var(--cp-border-strong);
+      background: var(--cp-surface);
+    }
+    .gate-label {
+      display: inline-flex;
+      margin-bottom: 12px;
+      padding: 5px 8px;
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .gate-checks {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .gate-check {
+      padding: 12px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+    .gate-check strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 14px;
+    }
+    .gate-check span {
+      color: var(--cp-text-muted);
+      font-size: 12px;
+    }
+    .outcome-stack {
+      display: grid;
+      gap: 10px;
+    }
+    .outcome.blocked { border-left: 4px solid var(--cp-danger); }
+    .outcome.allowed { border-left: 4px solid var(--cp-success); }
     .operating-caption {
       margin: 18px 0 0;
       color: var(--cp-text-muted);
       font-size: 15px;
     }
+    .technology-map {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    .technology-step {
+      padding: 18px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+    }
+    .technology-step .map-index {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--cp-accent);
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .technology-step h3 { margin-bottom: 6px; font-size: 17px; }
+    .technology-step > p {
+      min-height: 42px;
+      margin-bottom: 14px;
+      color: var(--cp-text-muted);
+      font-size: 13px;
+    }
+    .technology-step .chip { margin: 3px 3px 0 0; }
     .risk-table,
     .stack-table {
       width: 100%;
@@ -691,20 +804,27 @@
       margin: 0 auto;
       font-size: 18px;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 1000px) {
       .hero-grid,
       .grid-2,
       .grid-3,
       .metric-row,
       .layer,
       .map-grid,
-      .operating-view-grid,
+      .action-flow,
+      .technology-map,
       .persona-grid,
       .recipe-list,
       .roadmap-summary,
       .roadmap {
         grid-template-columns: 1fr;
       }
+      .action-flow { grid-template-columns: 1fr; }
+      .flow-arrow { transform: rotate(90deg); }
+      .accountability-rail,
+      .evidence-rail { align-items: flex-start; flex-direction: column; }
+      .accountability-rail span,
+      .evidence-rail span { text-align: left; }
       nav { display: none; }
       .step { grid-template-columns: 1fr; }
     }
@@ -727,6 +847,7 @@
         <span>Agent Governance</span>
       </a>
       <nav aria-label="Presentation sections">
+        <a href="#operating-view">Mechanism</a>
         <a href="#problem">Problem</a>
         <a href="#control-plane">Control plane</a>
         <a href="#agent-identity">Agent ID</a>
@@ -747,7 +868,7 @@
             Agent governance is portfolio management, runtime control, and software supply-chain discipline brought together. The goal is not to block autonomy; it is to make autonomy discoverable, reusable, observable, and safe enough to scale.
           </p>
           <div class="button-row">
-            <a class="button" href="#model">Start with the operating model</a>
+            <a class="button" href="#operating-view">Start with the governance mechanism</a>
             <a class="button secondary" href="#developer-path">Jump to developer path</a>
             <a class="button secondary" href="pitch.html">See the concrete demo proof point</a>
           </div>
@@ -785,68 +906,102 @@
     <section id="operating-view">
       <div class="shell">
         <div class="section-header">
-          <div class="kicker">Operating view</div>
-          <h2>One picture for the whole agent governance model.</h2>
-          <p>Use this as the mental model: business accountability sits above the agent control plane, Agent ID gives traceability, runtime enforcement controls side effects, observability shows behavior, and compliance protects data and audit posture.</p>
+          <div class="kicker">The mechanism</div>
+          <h2>Every consequential action passes through one governed checkpoint.</h2>
+          <p>Do not start with product names. Start with one concrete decision: an agent wants to change a system. Governance determines whether that exact action is blocked, paused for approval, or allowed.</p>
         </div>
-        <div class="operating-view" role="img" aria-label="Agent governance operating view across business, control plane, identity, runtime, observability, and compliance layers.">
-          <div class="operating-view-grid">
-            <article class="operating-layer">
-              <strong>Business</strong>
-              <ul>
-                <li>Value</li>
-                <li>Ownership</li>
-                <li>Risk</li>
-                <li>Lifecycle</li>
-              </ul>
-            </article>
-            <article class="operating-layer">
-              <strong>Control plane</strong>
-              <ul>
-                <li>Agent 365</li>
-                <li>Agent Registry</li>
-                <li>Agent Map</li>
-                <li>Catalog</li>
-              </ul>
-            </article>
-            <article class="operating-layer">
-              <strong>Agent identity</strong>
-              <ul>
-                <li>Entra Agent ID</li>
-                <li>Delegation</li>
-                <li>RBAC</li>
-                <li>Revocation</li>
-              </ul>
-            </article>
-            <article class="operating-layer">
-              <strong>Runtime</strong>
-              <ul>
-                <li>Foundry</li>
-                <li>APIM</li>
-                <li>MCP policy</li>
-                <li>Custom enforcement</li>
-              </ul>
-            </article>
-            <article class="operating-layer">
-              <strong>Observability</strong>
-              <ul>
-                <li>Agent 365</li>
-                <li>Defender</li>
-                <li>App Insights</li>
-                <li>Foundry</li>
-              </ul>
-            </article>
-            <article class="operating-layer">
-              <strong>Compliance</strong>
-              <ul>
-                <li>Purview</li>
-                <li>DLP</li>
-                <li>Retention</li>
-                <li>Audit</li>
-              </ul>
-            </article>
+        <div class="governance-story">
+          <div class="accountability-rail">
+            <strong>Business accountability</strong>
+            <span>The owner defines the purpose, acceptable risk, responsible team, and lifecycle.</span>
           </div>
-          <p class="operating-caption">The point is not that every agent uses the same runtime. The point is that every agent is governed through the same operating view.</p>
+          <div class="action-flow">
+            <article class="flow-card">
+              <h3>Agent proposes</h3>
+              <p>The model can investigate and recommend, but it cannot authorize itself.</p>
+              <span class="action-example">Restart payments-api-03</span>
+            </article>
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            <article class="governance-gate">
+              <span class="gate-label">Governed checkpoint</span>
+              <h3>Should this exact action happen?</h3>
+              <p>The runtime evaluates trusted identity, policy, evidence, and approval outside the model.</p>
+              <div class="gate-checks">
+                <div class="gate-check"><strong>Identity</strong><span>Who is acting?</span></div>
+                <div class="gate-check"><strong>Policy</strong><span>May it act?</span></div>
+                <div class="gate-check"><strong>Verification</strong><span>Does the plan satisfy explicit rules?</span></div>
+                <div class="gate-check"><strong>Approval</strong><span>Did a human approve this action?</span></div>
+              </div>
+            </article>
+            <div class="flow-arrow" aria-hidden="true">→</div>
+            <div class="outcome-stack">
+              <article class="outcome blocked">
+                <h3>Blocked or paused</h3>
+                <p>No side effect. Record the reason or request exact approval.</p>
+              </article>
+              <article class="outcome allowed">
+                <h3>Allowed</h3>
+                <p>Execute through a governed tool with least privilege.</p>
+              </article>
+            </div>
+          </div>
+          <div class="evidence-rail">
+            <strong>Evidence and feedback</strong>
+            <span>Both decisions produce telemetry, audit records, compliance evidence, and signals for portfolio governance.</span>
+          </div>
+          <p class="operating-caption"><strong>The mental model:</strong> the model proposes; trusted controls decide; governed tools act; evidence proves what happened.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="technology-map">
+      <div class="shell">
+        <div class="section-header">
+          <div class="kicker">Microsoft technology map</div>
+          <h2>Products support the mechanism; they are not the mechanism.</h2>
+          <p>Once the operating model is clear, map each governance question to the Microsoft capabilities that help answer it.</p>
+        </div>
+        <div class="technology-map">
+          <article class="technology-step">
+            <span class="map-index">Know the estate</span>
+            <h3>What agents exist?</h3>
+            <p>Inventory, ownership, lifecycle, risk, and reuse across the portfolio.</p>
+            <span class="chip">Agent 365</span>
+            <span class="chip">Agent Registry</span>
+            <span class="chip">Agent Map</span>
+          </article>
+          <article class="technology-step">
+            <span class="map-index">Identify</span>
+            <h3>Who is acting?</h3>
+            <p>Stable identity, delegation, access boundaries, and revocation.</p>
+            <span class="chip">Entra Agent ID</span>
+            <span class="chip">RBAC</span>
+          </article>
+          <article class="technology-step">
+            <span class="map-index">Control</span>
+            <h3>May it act?</h3>
+            <p>Runtime policy, verification, approval, and the sole side-effect path.</p>
+            <span class="chip">Foundry</span>
+            <span class="chip">APIM</span>
+            <span class="chip">MCP policy</span>
+            <span class="chip">Governed gateway</span>
+          </article>
+          <article class="technology-step">
+            <span class="map-index">Observe</span>
+            <h3>What happened?</h3>
+            <p>Correlated behavior, threats, costs, quality, and operational outcomes.</p>
+            <span class="chip">App Insights</span>
+            <span class="chip">Defender</span>
+            <span class="chip">Foundry</span>
+          </article>
+          <article class="technology-step">
+            <span class="map-index">Protect and prove</span>
+            <h3>Can we demonstrate control?</h3>
+            <p>Data protection, retention, audit posture, and compliance evidence.</p>
+            <span class="chip">Purview</span>
+            <span class="chip">DLP</span>
+            <span class="chip">Audit</span>
+          </article>
         </div>
       </div>
     </section>
