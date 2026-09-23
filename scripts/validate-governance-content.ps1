@@ -47,6 +47,10 @@ foreach ($question in @(
 
 Assert-Matches $presentation 'does not imply Alliance membership or endorsement' `
     "The Blueprint bridge must explicitly disclaim Alliance membership and endorsement."
+Assert-Matches $presentation 'https://blueprintalliance\.ai/blueprint-alliance-whitepaper\.pdf' `
+    "The presentation must link to the Blueprint Alliance whitepaper."
+Assert-Matches $presentation 'Governing Agentic Execution' `
+    "The presentation must cite the Blueprint Alliance whitepaper by title."
 Assert-Matches $presentation 'Response &amp; Recovery|Response & Recovery' `
     "The presentation must include an explicit Response & Recovery pillar."
 Assert-Matches $presentation 're-attestation' `
@@ -56,6 +60,10 @@ Assert-Matches $presentation 'read-only' `
 
 Assert-Matches $pitch 'structured plan and trusted action envelope, not the raw user prompt' `
     "The pitch must explain why authorization evaluates the structured plan rather than the raw prompt."
+Assert-Matches $pitch 'https://blueprintalliance\.ai/blueprint-alliance-whitepaper\.pdf' `
+    "The pitch must link to the Blueprint Alliance whitepaper."
+Assert-Matches $pitch 'Governing Agentic Execution' `
+    "The pitch must cite the Blueprint Alliance whitepaper by title."
 Assert-Matches $pitch 'Tier 3 agent' `
     "The pitch scenario must map to Tier 3."
 Assert-Matches $pitch 'Third-party, tech preview, non-Microsoft' `
