@@ -597,6 +597,30 @@
     .stack-table td:first-child {
       font-weight: 800;
     }
+    .blueprint-map th:nth-child(3) {
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+    }
+    .blueprint-map td:nth-child(3) {
+      background: color-mix(in srgb, var(--cp-accent) 6%, var(--cp-surface));
+      border-left: 2px solid color-mix(in srgb, var(--cp-accent) 35%, var(--cp-border));
+      border-right: 2px solid color-mix(in srgb, var(--cp-accent) 35%, var(--cp-border));
+    }
+    .implementation-key {
+      align-items: center;
+      background: var(--cp-accent-soft);
+      border: 1px solid color-mix(in srgb, var(--cp-accent) 30%, var(--cp-border));
+      border-radius: 12px;
+      color: var(--cp-text);
+      display: flex;
+      gap: 10px;
+      margin: 0 0 14px;
+      padding: 11px 14px;
+    }
+    .implementation-key strong {
+      color: var(--cp-accent);
+      white-space: nowrap;
+    }
     .architecture-map {
       padding: 28px;
       border: 1px solid var(--cp-border);
@@ -1037,13 +1061,14 @@
 <h2>My view of how Microsoft capabilities can operationalize the Blueprint Alliance's four governance questions.</h2>
 <p><strong>Personal interpretation disclaimer:</strong> This mapping is my own independent analysis of how Microsoft technologies and application controls could address the concerns in the Blueprint Alliance's open, vendor-neutral reference architecture. It is not an official position, statement, endorsement, or implementation guidance from Microsoft or the Blueprint Alliance, and it does not imply that Microsoft is an Alliance member.</p>
 </div>
-<div class="table-scroll"><table class="stack-table">
-<thead><tr><th scope="col">Blueprint question</th><th scope="col">Our lifecycle</th><th scope="col">Microsoft operationalization</th></tr></thead>
+<div class="implementation-key"><strong>Blue column = implemented here</strong><span>The highlighted column names the concrete controls in this repository today. The final column is my proposed Microsoft enterprise mapping, not functionality claimed by the local demo.</span></div>
+<div class="table-scroll"><table class="stack-table blueprint-map">
+<thead><tr><th scope="col">Blueprint question</th><th scope="col">Governance lifecycle</th><th scope="col">Implemented in this demo</th><th scope="col">My Microsoft enterprise mapping</th></tr></thead>
 <tbody>
-<tr><td>Where are my agents?</td><td>Discover → Register</td><td>Agent 365 Registry and Agent Map, connected platforms, API Center technical inventory, Foundry assets, and Defender discovery signals.</td></tr>
-<tr><td>What can they do?</td><td>Classify → Approve</td><td>Entra Agent ID, RBAC, Conditional Access, Purview data controls, risk tiers, tool certification, and approval policy.</td></tr>
-<tr><td>What are they doing?</td><td>Run → Observe</td><td>APIM AI Gateway, governed tool gateways, Foundry observability, Application Insights, Defender, and correlated audit.</td></tr>
-<tr><td>How do I respond?</td><td>Respond → Recover</td><td>Agent 365 management actions, Entra revocation, gateway blocking and throttling, hosting controls, application containment, re-attestation, and staged restoration.</td></tr>
+<tr><td>Where are my agents?</td><td>Discover → Register</td><td><strong>Bounded local registration:</strong> one incident agent with explicit agent, deployment, user, session, and incident identities plus an allowlisted <code>ToolRegistry</code>. Portfolio discovery is not implemented.</td><td>Agent 365 Registry and Agent Map, connected platforms, API Center technical inventory, Foundry assets, and Defender discovery signals.</td></tr>
+<tr><td>What can they do?</td><td>Classify → Approve</td><td><strong>Implemented authorization path:</strong> typed <code>ActionPlan</code>, Node plan verifier, bounded Dafny model, trusted intent classification, default-deny policy, exact incident-commander approval, and a 90-second, one-use capability lease.</td><td>Entra Agent ID, RBAC, Conditional Access, Purview data controls, risk tiers, tool certification, and approval policy.</td></tr>
+<tr><td>What are they doing?</td><td>Run → Observe</td><td><strong>Implemented execution evidence:</strong> the <code>GovernedToolGateway</code> is the sole side-effect path to the incident simulator; it records policy, approval, lease, execution, and outcome in a hash-linked audit chain exposed through the BFF and rehearsal evidence.</td><td>APIM AI Gateway, governed tool gateways, Foundry observability, Application Insights, Defender, and correlated audit.</td></tr>
+<tr><td>How do I respond?</td><td>Respond → Recover</td><td><strong>Implemented local response:</strong> containment blocks new execution, revokes outstanding leases, requires known-good re-attestation, restores reads first, and requires incident-commander sign-off before writes return. Process, network, Entra, and Agent 365 containment are not exercised locally.</td><td>Agent 365 management actions, Entra revocation, gateway blocking and throttling, hosting controls, application containment, re-attestation, and staged restoration.</td></tr>
 </tbody>
 </table></div>
 <p class="source-note">Source: Blueprint Alliance, <a href="https://blueprintalliance.ai/blueprint-alliance-whitepaper.pdf"><cite>Governing Agentic Execution</cite></a>. The mapping above is my personal interpretation, not an official Microsoft or Blueprint Alliance position, endorsement, or implementation guide.</p>

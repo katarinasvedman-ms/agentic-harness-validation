@@ -49,6 +49,14 @@ Assert-Matches $presentation 'Personal interpretation disclaimer' `
     "The Blueprint bridge must explicitly identify the mapping as a personal interpretation."
 Assert-Matches $presentation 'not an official position, statement, endorsement, or implementation guidance from Microsoft or the Blueprint Alliance' `
     "The Blueprint bridge must disclaim official Microsoft and Blueprint Alliance authority."
+Assert-Matches $presentation 'Implemented in this demo' `
+    "The Blueprint bridge must distinguish the repository implementation from the Microsoft mapping."
+Assert-Matches $presentation 'Portfolio discovery is not implemented' `
+    "The Blueprint bridge must state the local discovery limitation."
+Assert-Matches $presentation '90-second, one-use capability lease' `
+    "The Blueprint bridge must identify the implemented intent-based authorization path."
+Assert-Matches $presentation 'Process, network, Entra, and Agent 365 containment are not exercised locally' `
+    "The Blueprint bridge must distinguish local containment from Microsoft platform controls."
 Assert-Matches $presentation 'https://blueprintalliance\.ai/blueprint-alliance-whitepaper\.pdf' `
     "The presentation must link to the Blueprint Alliance whitepaper."
 Assert-Matches $presentation 'Governing Agentic Execution' `
