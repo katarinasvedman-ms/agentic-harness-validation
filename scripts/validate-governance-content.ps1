@@ -45,8 +45,10 @@ foreach ($question in @(
         "The presentation is missing the Blueprint bridge question: $question"
 }
 
-Assert-Matches $presentation 'does not imply Alliance membership or endorsement' `
-    "The Blueprint bridge must explicitly disclaim Alliance membership and endorsement."
+Assert-Matches $presentation 'Personal interpretation disclaimer' `
+    "The Blueprint bridge must explicitly identify the mapping as a personal interpretation."
+Assert-Matches $presentation 'not an official position, statement, endorsement, or implementation guidance from Microsoft or the Blueprint Alliance' `
+    "The Blueprint bridge must disclaim official Microsoft and Blueprint Alliance authority."
 Assert-Matches $presentation 'https://blueprintalliance\.ai/blueprint-alliance-whitepaper\.pdf' `
     "The presentation must link to the Blueprint Alliance whitepaper."
 Assert-Matches $presentation 'Governing Agentic Execution' `
@@ -68,6 +70,8 @@ Assert-Matches $pitch 'https://blueprintalliance\.ai/blueprint-alliance-whitepap
     "The pitch must link to the Blueprint Alliance whitepaper."
 Assert-Matches $pitch 'Governing Agentic Execution' `
     "The pitch must cite the Blueprint Alliance whitepaper by title."
+Assert-Matches $pitch 'Personal interpretation disclaimer' `
+    "The pitch must explicitly identify the Blueprint mapping as a personal interpretation."
 Assert-Matches $pitch 'Tier 3 agent' `
     "The pitch scenario must map to Tier 3."
 Assert-Matches $pitch 'Third-party, tech preview, non-Microsoft' `
