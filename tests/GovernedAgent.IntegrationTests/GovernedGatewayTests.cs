@@ -80,7 +80,7 @@ public sealed class GovernedGatewayTests
     public async Task GatewayDeniesWriteEvenWhenHookLayerIsBypassed()
     {
         var harness = CreateHarness();
-        harness.KillSwitch.Activate();
+        harness.Containment.Contain();
         var approval = CreateApproval(harness.Plan, harness.Envelope.Action.ActionDigest);
         harness.Approvals.Add(approval);
 
@@ -89,11 +89,35 @@ public sealed class GovernedGatewayTests
                 CreateRequest(harness.Plan, harness.Envelope, approval.Nonce),
                 CancellationToken.None));
 
-        Assert.Equal("kill_switch_active", error.Code);
+        Assert.Equal("containment_active", error.Code);
         Assert.Equal(
             ServiceHealth.Degraded,
             harness.Simulator.GetServiceHealth(IncidentSimulator.DemoServiceId).Health);
         Assert.Single(harness.Audit.ReadAll());
+        Assert.True(harness.Approvals.TryConsume(
+            approval.Nonce,
+            CreateConsumptionRequest(harness, Now),
+            out _));
+    }
+
+    [Fact]
+    public async Task ContainmentActivatedAfterPolicyEvaluationDeniesExecution()
+    {
+        var harness = CreateHarness(
+            policyFactory: containment =>
+                new ContainAfterAllowPolicyEvaluator(containment));
+        var approval = CreateApproval(harness.Plan, harness.Envelope.Action.ActionDigest);
+        harness.Approvals.Add(approval);
+
+        var error = await Assert.ThrowsAsync<GovernanceException>(async () =>
+            await harness.Gateway.ExecuteAsync(
+                CreateRequest(harness.Plan, harness.Envelope, approval.Nonce),
+                CancellationToken.None));
+
+        Assert.Equal("containment_active", error.Code);
+        Assert.Equal(
+            ServiceHealth.Degraded,
+            harness.Simulator.GetServiceHealth(IncidentSimulator.DemoServiceId).Health);
         Assert.True(harness.Approvals.TryConsume(
             approval.Nonce,
             CreateConsumptionRequest(harness, Now),
@@ -215,7 +239,8 @@ public sealed class GovernedGatewayTests
 
     private static GatewayHarness CreateHarness(
         bool includeUnknownArgument = false,
-        int maximumToolCalls = 12)
+        int maximumToolCalls = 12,
+        Func<IContainmentControl, IPolicyEvaluator>? policyFactory = null)
     {
         var arguments = new Dictionary<string, JsonElement>
         {
@@ -280,16 +305,16 @@ public sealed class GovernedGatewayTests
                 new string('c', 64)));
         var simulator = new IncidentSimulator();
         var approvals = new InMemoryApprovalStore();
-        var killSwitch = new InMemoryKillSwitch();
+        var containment = new InMemoryContainmentControl();
         var audit = new InMemoryAuditChain();
         var gateway = new GovernedToolGateway(
             registry,
             canonicalizer,
-            new DefaultDenyPolicyEvaluator(),
+            policyFactory?.Invoke(containment) ?? new DefaultDenyPolicyEvaluator(),
             approvals,
             new InMemoryExecutionBudgetStore(
                 new ExecutionBudgetLimits(maximumToolCalls, TimeSpan.FromMinutes(3))),
-            killSwitch,
+            containment,
             audit,
             new SimulatorGovernedToolExecutor(simulator),
             new FixedTimeProvider(Now));
@@ -298,7 +323,7 @@ public sealed class GovernedGatewayTests
             gateway,
             simulator,
             approvals,
-            killSwitch,
+            containment,
             audit,
             plan,
             envelope);
@@ -351,7 +376,7 @@ public sealed class GovernedGatewayTests
         GovernedToolGateway Gateway,
         IncidentSimulator Simulator,
         InMemoryApprovalStore Approvals,
-        InMemoryKillSwitch KillSwitch,
+        InMemoryContainmentControl Containment,
         InMemoryAuditChain Audit,
         ActionPlan Plan,
         TrustedActionEnvelope Envelope);
@@ -359,5 +384,25 @@ public sealed class GovernedGatewayTests
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    private sealed class ContainAfterAllowPolicyEvaluator(
+        IContainmentControl containment) : IPolicyEvaluator
+    {
+        private readonly DefaultDenyPolicyEvaluator _inner =
+            new(new FixedTimeProvider(Now));
+
+        public async ValueTask<PolicyDecision> EvaluateAsync(
+            PolicyEvaluationContext context,
+            CancellationToken cancellationToken)
+        {
+            var decision = await _inner.EvaluateAsync(context, cancellationToken);
+            if (decision.Decision == GovernanceDecision.Allow)
+            {
+                containment.Contain();
+            }
+
+            return decision;
+        }
     }
 }

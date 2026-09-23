@@ -17,6 +17,8 @@ remain authoritative.
 - Every side effect passes through a governed gateway that independently
   revalidates the action.
 - Production writes require an exact, digest-bound, single-use approval.
+- Application containment blocks new governed side effects; restoration requires
+  re-attestation and incident-commander sign-off.
 - Dafny proves selected properties of the bounded deterministic plan model.
 - The local audit chain detects mutation.
 
@@ -89,6 +91,9 @@ unrestricted URL, or unapproved MCP capability.
 > The agent must express a proposed operation as a structured, bounded plan.
 > The executable TypeScript verifier evaluates the concrete plan. Dafny proves
 > selected invariants of the corresponding deterministic authorization model.
+> The verifier evaluates that structured plan, not the raw prompt: indirect
+> prompt injection can influence later model choices, while the proposed action
+> is what must cross the deterministic authorization boundary.
 
 The modeled invariants include:
 
@@ -103,7 +108,7 @@ The modeled invariants include:
   window.
 - Consumed approvals and completed idempotency keys cannot initiate another
   execution.
-- An active kill switch prevents new execution transitions.
+- Active containment prevents new execution transitions.
 
 **Say:**
 
@@ -114,7 +119,7 @@ The modeled invariants include:
 
 ## 4. Explain governed tool use (2 minutes)
 
-**Show:** **Policy & kill switch** and the current capabilities.
+**Show:** **Containment & recovery** and the current capabilities.
 
 Draw or narrate this path:
 
@@ -161,7 +166,7 @@ The trusted demo tool registry contains:
 
 > The governed gateway is the only side-effect boundary. It recomputes the
 > canonical action digest and checks the registered tool, resource target,
-> verification result, policy, execution budget, exact approval, kill switch,
+> verification result, policy, execution budget, exact approval, containment,
 > idempotency key, and expected resource version.
 
 > The gateway performs these checks independently. A mistaken or bypassed
@@ -202,14 +207,22 @@ Narrate each result:
    > The valid approval is bound to this action digest and target. A replay is
    > rejected.
 
-6. **The kill switch stops new writes.**
+6. **Containment stops new writes.**
 
-   > Emergency stop is checked at the gateway, so a new side effect is denied.
+   > Application containment is checked at the gateway, so a new side effect
+   > is denied.
 
-7. **The audit chain verifies.**
+7. **Recovery is ordered and staged.**
+
+   > A governance operator re-attests the known-good version and digest before
+   > the control enters read-only recovery. Write authority returns only after
+   > an incident commander records root-cause sign-off.
+
+8. **The audit chain verifies.**
 
    > The local hash-linked audit record detects mutation and correlates the
-   > decision with the verified action.
+   > decision with the verified action, containment, re-attestation, and
+   > restoration.
 
 ## 6. Show the evidence (30 seconds)
 
@@ -224,7 +237,9 @@ Point out:
 - `containsUntrustedContent`
 - the pending approval and required role
 - the accepted approval decision
-- the active kill switch
+- `containment.mode` changing to `Contained`
+- the re-attested known-good version and read-only recovery state
+- `restoredControls.mode` returning to `Operational`
 - `integrityValid`
 
 ## 7. Close (30 seconds)
@@ -260,12 +275,15 @@ The design fails closed. An unavailable or indeterminate verification, policy,
 approval, audit, or trusted-metadata dependency must not produce an executable
 action.
 
-### Does the kill switch terminate an operation already running?
+### Does local containment terminate an operation already running?
 
 The demonstrated invariant prevents new execution transitions. An external
 operation that has already started may complete or time out. Production
-deployment should combine the application kill switch with operational
-identity, network, and platform controls.
+deployment should combine this application control with layered identity,
+traffic, hosting, network, endpoint, and platform controls. Agent 365 can act
+as a central containment surface where the connected agent type supports the
+relevant management action; it is not a universal process-termination
+guarantee for every backing runtime.
 
 ### Is the web console live?
 

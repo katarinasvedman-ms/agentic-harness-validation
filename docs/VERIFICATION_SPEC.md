@@ -605,9 +605,13 @@ lemmafit MAY verify the governance console's pure transition logic:
 - Approval is required before production execution.
 - Completed cannot execute again.
 - Revocation invalidates pending execution.
-- Kill switch blocks new execution transitions.
+- Containment blocks new execution transitions.
 
-The experiment MUST remain separate from runtime authorization unless it meets the same artifact binding, differential testing, CI, and fail-closed requirements as the primary plan gate.
+The implemented containment-recovery ordering is currently supported by
+executable state-machine and integration tests, not by the Dafny proof set.
+The experiment MUST remain separate from runtime authorization unless it meets
+the same artifact binding, differential testing, CI, and fail-closed
+requirements as the primary plan gate.
 
 ## 19. Verification acceptance criteria
 

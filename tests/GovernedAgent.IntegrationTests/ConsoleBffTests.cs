@@ -142,20 +142,118 @@ public sealed class ConsoleBffTests
     }
 
     [Fact]
-    public void KillSwitchValidatesReasonAndResetRestoresDemoState()
+    public void ContainmentRecoveryRequiresOrderedEvidenceAndClosesAudit()
     {
         var state = CreateState();
+        var operatorIdentity = new DemoIdentity(
+            "operator@example.test",
+            new HashSet<string>(
+                [DemoIdentity.GovernanceOperatorRole],
+                StringComparer.Ordinal));
+        var commanderIdentity = new DemoIdentity(
+            "commander@example.test",
+            new HashSet<string>(
+                [DemoIdentity.IncidentCommanderRole],
+                StringComparer.Ordinal));
 
-        Assert.Throws<ArgumentException>(() => state.SetKillSwitch(true, " "));
-        Assert.True(state.SetKillSwitch(true, "Pause local execution.").KillSwitchActive);
+        Assert.Throws<ArgumentException>(() =>
+            state.SetContainment(true, " ", operatorIdentity));
+        var contained = state.SetContainment(
+            true,
+            "Pause local execution.",
+            operatorIdentity);
+        Assert.True(contained.KillSwitchActive);
+        Assert.Equal(ContainmentMode.Contained, contained.Mode);
+        Assert.Throws<InvalidOperationException>(() =>
+            state.SetContainment(false, "Bypass recovery.", commanderIdentity));
+        Assert.Throws<InvalidOperationException>(() =>
+            state.RestoreOperational(
+                new RecoveryMutation("Root cause.", "Restore."),
+                commanderIdentity));
+
+        var readOnly = state.BeginReadOnlyRecovery(
+            new ReattestationMutation(
+                new string('a', 64),
+                "agent-image:sha256:known-good",
+                "Verified identity, policy, and deployment."),
+            operatorIdentity);
+        Assert.Equal(ContainmentMode.ReadOnlyRecovery, readOnly.Mode);
+        Assert.NotNull(readOnly.Reattestation);
+
+        var restored = state.RestoreOperational(
+            new RecoveryMutation(
+                "Removed the untrusted integration and redeployed the known-good image.",
+                "Incident commander approved staged restoration."),
+            commanderIdentity);
+        Assert.Equal(ContainmentMode.Operational, restored.Mode);
+        Assert.False(restored.KillSwitchActive);
+        Assert.NotNull(restored.SignOff);
+        Assert.True(state.GetAudit().IntegrityValid);
+        Assert.Equal(3, state.GetAudit().Records.Count);
 
         state.Reset();
 
-        Assert.False(state.GetControls().KillSwitchActive);
+        Assert.Equal(ContainmentMode.Operational, state.GetControls().Mode);
+        Assert.NotNull(state.GetControls().Reattestation);
+        Assert.NotNull(state.GetControls().SignOff);
         Assert.NotNull(state.GetPending(IncidentSimulator.DemoIncidentId));
     }
 
-    private static ConsoleState CreateState(InMemoryApprovalStore? approvals = null)
+    [Fact]
+    public void ResetCannotClearActiveContainment()
+    {
+        var state = CreateState();
+        var identity = new DemoIdentity(
+            "operator@example.test",
+            new HashSet<string>(
+                [DemoIdentity.GovernanceOperatorRole],
+                StringComparer.Ordinal));
+        state.SetContainment(true, "Pause local execution.", identity);
+
+        state.Reset();
+
+        Assert.Equal(ContainmentMode.Contained, state.GetControls().Mode);
+    }
+
+    [Fact]
+    public void FailedRecoveryAuditLeavesWriteAuthorityDisabled()
+    {
+        var control = new InMemoryContainmentControl();
+        var state = CreateState(
+            audit: new FailingAuditChain(failOnAppend: 3),
+            containment: control);
+        var operatorIdentity = new DemoIdentity(
+            "operator@example.test",
+            new HashSet<string>(
+                [DemoIdentity.GovernanceOperatorRole],
+                StringComparer.Ordinal));
+        var commanderIdentity = new DemoIdentity(
+            "commander@example.test",
+            new HashSet<string>(
+                [DemoIdentity.IncidentCommanderRole],
+                StringComparer.Ordinal));
+        state.SetContainment(true, "Pause local execution.", operatorIdentity);
+        state.BeginReadOnlyRecovery(
+            new ReattestationMutation(
+                new string('a', 64),
+                "agent-image:sha256:known-good",
+                "Verified identity, policy, and deployment."),
+            operatorIdentity);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            state.RestoreOperational(
+                new RecoveryMutation(
+                    "Removed the untrusted integration.",
+                    "Approve restoration."),
+                commanderIdentity));
+        Assert.Equal(ContainmentMode.ReadOnlyRecovery, control.Mode);
+        Assert.Null(control.SignOff);
+    }
+
+    private static ConsoleState CreateState(
+        InMemoryApprovalStore? approvals = null,
+        IAuditChain? audit = null,
+        InMemoryContainmentControl? containment = null)
     {
         var time = new FixedTimeProvider(
             new DateTimeOffset(2026, 8, 12, 12, 47, 32, TimeSpan.Zero));
@@ -167,8 +265,8 @@ public sealed class ConsoleBffTests
                 registry,
                 new ActionCanonicalizer(registry)),
             approvals ?? new InMemoryApprovalStore(),
-            new InMemoryAuditChain(),
-            new InMemoryKillSwitch(),
+            audit ?? new InMemoryAuditChain(),
+            containment ?? new InMemoryContainmentControl(),
             ExecutionBudgetLimits.LocalDefault,
             time);
     }
@@ -176,6 +274,27 @@ public sealed class ConsoleBffTests
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    private sealed class FailingAuditChain(int failOnAppend) : IAuditChain
+    {
+        private readonly InMemoryAuditChain _inner = new();
+        private int _appendCount;
+
+        public AuditRecord Append(AuditRecord record)
+        {
+            _appendCount++;
+            if (_appendCount == failOnAppend)
+            {
+                throw new InvalidOperationException("Simulated audit persistence failure.");
+            }
+
+            return _inner.Append(record);
+        }
+
+        public IReadOnlyList<AuditRecord> ReadAll() => _inner.ReadAll();
+
+        public bool VerifyIntegrity() => _inner.VerifyIntegrity();
     }
 
     private static string FindRepositoryRoot()

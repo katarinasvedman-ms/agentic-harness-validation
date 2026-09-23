@@ -198,7 +198,9 @@ The demo must show:
 3. Runtime governance denies any direct unauthorized tool invocation.
 4. Infrastructure permissions prevent unrestricted access as an independent control.
 5. The denial records the agent identity, action, policy version, and reason.
-6. Repeated violations can reduce trust, open a circuit breaker, or activate a kill switch.
+6. Repeated violations can reduce trust, open a circuit breaker, or activate containment.
+7. Recovery requires re-attestation of a known-good artifact, a read-only stage,
+   root-cause sign-off, and audit closure before write access returns.
 
 ## 9. User experience principles
 
@@ -315,6 +317,8 @@ The product must expose:
 The product must provide:
 
 - A kill switch.
+- Ordered recovery with re-attestation, a read-only stage, and authorized
+  root-cause sign-off.
 - Circuit breakers for repeated failures or policy violations.
 - Action and cost budgets.
 - Timeouts and bounded retries.
@@ -345,7 +349,8 @@ The presenter shows:
 - A comparison between two agent versions.
 - The formal guarantee report.
 - The production trace and audit evidence.
-- The kill switch or circuit-breaker response.
+- The layered containment or circuit-breaker response.
+- The staged recovery and audit-closure evidence.
 
 ## 12. Success metrics
 
@@ -364,7 +369,9 @@ The presenter shows:
 - 100% of required formal proof obligations pass before deployment.
 - 100% of required audit fields are present for governed actions.
 - No demo identity has permissions beyond the documented least-privilege set.
-- Kill-switch activation prevents new governed actions within the defined service-level objective.
+- Containment activation prevents new governed actions within the defined service-level objective.
+- Write authority cannot return before re-attestation and authorized
+  root-cause sign-off.
 
 ### 12.3 Quality success
 
@@ -391,7 +398,7 @@ Exact thresholds not defined in this PRD must be established in the FRD and eval
 - A governance console.
 - At least three formally specified invariants.
 - One prompt-injection scenario.
-- One kill-switch or circuit-breaker demonstration.
+- One containment, read-only recovery, and restoration demonstration.
 
 ### 13.2 Future extensions
 
@@ -518,7 +525,8 @@ The initial product is accepted when:
 5. Every action is traceable to the relevant user, agent, deployment, policy, approval, and incident.
 6. Required evaluations and proofs gate deployment.
 7. The governance console accurately distinguishes model output, policy decisions, approvals, execution results, and formal guarantees.
-8. The kill switch or circuit breaker prevents subsequent actions as designed.
+8. Containment prevents subsequent actions, and write access returns only
+   through the ordered recovery workflow.
 9. A presenter can deliver the complete narrative in 20 minutes.
 10. Customer-facing documentation clearly identifies preview and experimental components.
 11. Every Copilot tool request is intercepted before execution and revalidated at the gateway.

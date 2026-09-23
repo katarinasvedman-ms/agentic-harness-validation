@@ -335,7 +335,7 @@ public sealed class AgentWorkflowTests
             approvals,
             new InMemoryExecutionBudgetStore(
                 new ExecutionBudgetLimits(12, TimeSpan.FromMinutes(3))),
-            new InMemoryKillSwitch(),
+            new InMemoryContainmentControl(),
             audit,
             new SimulatorGovernedToolExecutor(simulator),
             new FixedTimeProvider(Now));

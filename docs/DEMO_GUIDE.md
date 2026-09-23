@@ -60,11 +60,14 @@ control evidence.
    approval. Say: “This demo verifies a bounded plan schema and binds one
    production write to its action digest, target, expiry, and approver role.
    This is not a proof of the model or a production certification.”
-4. **Show independent enforcement (45 seconds).** Point to Policy & kill
-   switch. Say: “The governed gateway is the only side-effect boundary. It
+4. **Show independent enforcement (45 seconds).** Point to Containment &
+   recovery. Say: “The governed gateway is the only application side-effect boundary. It
    rechecks registry metadata, policy, budget, exact approval, idempotency, and
-   emergency stop.”
-5. **Close on evidence (30 seconds).** Point to Audit chain. Say: “Every local
+   containment.”
+5. **Show staged recovery (45 seconds).** Say: “A governance operator
+   re-attests the known-good artifact before read-only recovery. An incident
+   commander must sign off the root cause before write authority returns.”
+6. **Close on evidence (30 seconds).** Point to Audit chain. Say: “Every local
    decision is correlated and the in-memory hash chain is verified. Durable
    Azure audit storage remains deployment work.”
 
@@ -92,10 +95,12 @@ Run `pwsh .\scripts\rehearse-local-demo.ps1` and narrate its checklist:
    exact incident-commander decision once, and rejects replay. Workflow tests
    separately prove wrong digest denial, valid resume, one restart, and healthy
    completion.
-5. **Emergency control (2 minutes).** The API activates the kill switch and
-   reads it back. Gateway tests prove a new write is denied and no side effect
-   occurs.
-6. **Audit and limits (2 minutes).** The API returns `integrityValid=true`;
+5. **Containment (2 minutes).** The API activates application containment.
+   Gateway tests prove a new write is denied and no side effect occurs.
+6. **Recovery (2 minutes).** The governance operator records a known-good
+   artifact digest and version to enter read-only recovery. The incident
+   commander then records root-cause sign-off before operational access returns.
+7. **Audit and limits (2 minutes).** The API returns `integrityValid=true`;
    explain that the local chain, identities, policy, and approval stores are
    in-memory. Open
    [the architecture source](architecture/governed-agent-runtime.excalidraw)
@@ -116,7 +121,8 @@ irm http://127.0.0.1:5072/api/audit
 Safe claims: the repository contains deterministic local enforcement and tests;
 the simulator write is gateway-controlled; exact approvals are digest-bound and
 single-use; the bounded verifier and published assumptions have executable
-evidence; the local audit chain detects mutation.
+evidence; containment and ordered recovery have executable local evidence; the
+local audit chain detects mutation.
 
 Do not claim that the whole agent is formally verified, that prompt injection
 is eliminated, that Azure RBAC/egress/durable audit is configured, or that

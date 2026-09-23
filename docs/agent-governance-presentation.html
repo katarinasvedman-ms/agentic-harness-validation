@@ -945,7 +945,7 @@
 <header class="topbar">
 <div class="shell topbar-inner">
 <a aria-label="Back to top" class="brand" href="#top"><span class="brand-mark">G</span><span>Agent Governance</span></a>
-<nav aria-label="Presentation sections"><a href="#problem">Problem</a><a href="#governance-model">Model</a><a href="#risk">Risk</a><a href="#microsoft-stack">Microsoft stack</a><a href="#runtime">Runtime</a><a href="#adoption">Adoption</a></nav>
+<nav aria-label="Presentation sections"><a href="#problem">Problem</a><a href="#governance-model">Model</a><a href="#blueprint-bridge">Blueprint</a><a href="#risk">Risk</a><a href="#microsoft-stack">Microsoft stack</a><a href="#runtime">Runtime</a><a href="#response-recovery">Response</a><a href="#adoption">Adoption</a></nav>
 </div>
 </header><main id="top">
 <section class="hero-section">
@@ -1023,9 +1023,29 @@
 <article class="card"><h3>Approve</h3><p>Apply the release path and evidence required for that tier.</p></article>
 <article class="card"><h3>Run</h3><p>Enforce policy at the point of consequential action.</p></article>
 <article class="card"><h3>Observe</h3><p>Correlate decisions, actions, quality, cost, and outcomes.</p></article>
+<article class="card"><h3>Respond</h3><p>Contain the smallest effective identity, traffic, runtime, data, or action scope.</p></article>
+<article class="card"><h3>Recover</h3><p>Re-attest the known-good state and restore read, then write access with evidence.</p></article>
 <article class="card"><h3>Reuse</h3><p>Publish proven tools, agents, prompts, and patterns.</p></article>
 <article class="card"><h3>Retire</h3><p>Remove stale agents, access, dependencies, and data safely.</p></article>
 </div>
+</div>
+</section>
+<section id="blueprint-bridge">
+<div class="shell">
+<div class="section-header">
+<div class="kicker">Open architecture bridge</div>
+<h2>Microsoft capabilities can operationalize the Blueprint Alliance's four governance questions.</h2>
+<p>The Blueprint Alliance provides an open, vendor-neutral reference architecture. This mapping shows how the Microsoft stack and application controls can implement the same operational concerns; it does not imply Alliance membership or endorsement.</p>
+</div>
+<div class="table-scroll"><table class="stack-table">
+<thead><tr><th scope="col">Blueprint question</th><th scope="col">Our lifecycle</th><th scope="col">Microsoft operationalization</th></tr></thead>
+<tbody>
+<tr><td>Where are my agents?</td><td>Discover → Register</td><td>Agent 365 Registry and Agent Map, connected platforms, API Center technical inventory, Foundry assets, and Defender discovery signals.</td></tr>
+<tr><td>What can they do?</td><td>Classify → Approve</td><td>Entra Agent ID, RBAC, Conditional Access, Purview data controls, risk tiers, tool certification, and approval policy.</td></tr>
+<tr><td>What are they doing?</td><td>Run → Observe</td><td>APIM AI Gateway, governed tool gateways, Foundry observability, Application Insights, Defender, and correlated audit.</td></tr>
+<tr><td>How do I respond?</td><td>Respond → Recover</td><td>Agent 365 management actions, Entra revocation, gateway blocking and throttling, hosting controls, application containment, re-attestation, and staged restoration.</td></tr>
+</tbody>
+</table></div>
 </div>
 </section><section id="risk">
 <div class="shell">
@@ -1040,7 +1060,7 @@
 <tr><td>Tier 0</td><td>Personal productivity, no sensitive data, no tools.</td><td>Registration, usage policy, basic logging.</td><td>Self-service.</td></tr>
 <tr><td>Tier 1</td><td>Knowledge assistant over approved internal content.</td><td>Owner, data classification, eval baseline, content safety, observability.</td><td>Team owner approval.</td></tr>
 <tr><td>Tier 2</td><td>Agent with read-only business system tools.</td><td>Entra Agent ID, scoped RBAC, runtime policy, regression evals, audit trail.</td><td>Business and platform approval.</td></tr>
-<tr><td>Tier 3</td><td>Agent with write actions or customer-impacting workflows.</td><td>Human approval for high-impact actions, tool certification, red-team tests, incident runbook, kill switch.</td><td>Security, compliance, and business approval.</td></tr>
+<tr><td>Tier 3</td><td>Agent with write actions or customer-impacting workflows.</td><td>Human approval for high-impact actions, tool certification, red-team tests, incident runbook, scoped containment, and tested recovery.</td><td>Security, compliance, and business approval.</td></tr>
 <tr><td>Tier 4</td><td>Autonomous operational agent for critical systems.</td><td>Formalized policy, strict budgets, blast-radius controls, continuous monitoring, change management, executive risk acceptance.</td><td>Central governance board.</td></tr>
 </tbody>
 </table></div>
@@ -1060,6 +1080,7 @@
 <span class="chip">Agent 365</span>
 <span class="chip">Agent Registry</span>
 <span class="chip">Agent Map</span>
+<span class="chip">API Center</span>
 </article>
 <article class="technology-step">
 <span class="map-index">Identify</span>
@@ -1084,6 +1105,15 @@
 <span class="chip">App Insights</span>
 <span class="chip">Defender</span>
 <span class="chip">Foundry</span>
+</article>
+<article class="technology-step">
+<span class="map-index">Respond and recover</span>
+<h3>How do we contain and restore it?</h3>
+<p>Block availability, revoke identity or traffic, stop new actions, contain the runtime, then re-attest and restore access in stages.</p>
+<span class="chip">Agent 365</span>
+<span class="chip">Entra revocation</span>
+<span class="chip">APIM</span>
+<span class="chip">Platform controls</span>
 </article>
 <article class="technology-step">
 <span class="map-index">Protect and prove</span>
@@ -1113,6 +1143,51 @@
 <div class="callout">
             Runtime enforcement should be close to the side effect. If a tool can change a system, the enforcement point must re-check Agent ID, authorization, policy, approval, and blast radius even if the agent already checked earlier.
           </div>
+</div>
+</div>
+</section>
+<section id="response-recovery">
+<div class="shell">
+<div class="section-header">
+<div class="kicker">Response &amp; Recovery</div>
+<h2>Containment is layered, and restoration is an authorized workflow.</h2>
+<p>There is no universal stop button across every agent and runtime. Agent 365 provides a central governance surface for supported management actions, while identity, gateway, hosting, endpoint, data, and application controls enforce the response within their own boundaries.</p>
+</div>
+<div class="grid-2">
+<article class="card">
+<h3>Contain the smallest effective scope</h3>
+<ul>
+<li>Block an agent or active instance through Agent 365 where the platform supports that action.</li>
+<li>Disable the Entra Agent ID or revoke downstream session and token access.</li>
+<li>Block or throttle model, API, tool, MCP, and agent traffic through APIM or another gateway.</li>
+<li>Quarantine the network path, suspend the runtime, or terminate the process when lower-impact controls are insufficient.</li>
+<li>Use the application containment gate to prevent new governed side effects immediately.</li>
+</ul>
+</article>
+<article class="card">
+<h3>Restore trust in stages</h3>
+<ul>
+<li>Re-attest identity, code, configuration, policy, and the known-good deployment version.</li>
+<li>Record root cause, remediation, accountable owner, and recovery authority.</li>
+<li>Restore read-only investigation before write-capable operation.</li>
+<li>Observe the restricted agent and require explicit sign-off before expanding access.</li>
+<li>Close the audit trail by linking containment, remediation, re-enrollment, and outcome evidence.</li>
+</ul>
+</article>
+</div>
+<div class="table-scroll" style="margin-top: 18px;"><table class="stack-table">
+<thead><tr><th scope="col">Control layer</th><th scope="col">Microsoft or application control</th><th scope="col">Primary effect</th></tr></thead>
+<tbody>
+<tr><td>Agent availability</td><td>Agent 365 Block/Unblock and instance management</td><td>Blocks governed availability or stops an active instance when the agent type and platform integration support it.</td></tr>
+<tr><td>Agent authentication</td><td>Microsoft Entra Agent ID</td><td>Disables the agent identity and prevents new authenticated access or token issuance.</td></tr>
+<tr><td>Tool and traffic access</td><td>Agent 365 Agent Tools, APIM AI Gateway</td><td>Removes tools from governed use, rejects traffic, revokes gateway credentials, or applies throttling and policy.</td></tr>
+<tr><td>Runtime and network</td><td>Foundry or hosting controls, Defender, Intune, network controls</td><td>Suspends or isolates the workload, session, endpoint, or communication path.</td></tr>
+<tr><td>Application action boundary</td><td>Governed tool gateway</td><td>Stops new side effects even when the agent process continues to investigate.</td></tr>
+<tr><td>Data boundary</td><td>Microsoft Purview</td><td>Blocks, redacts, or constrains inappropriate data movement.</td></tr>
+</tbody>
+</table></div>
+<div class="callout">
+<strong>Scope matters:</strong> an Agent 365 block, an Entra identity disable, a gateway denial, and a runtime suspension are different controls. Production runbooks should coordinate them and record which enforcement points confirmed containment.
 </div>
 </div>
 </section><section id="assurance">
@@ -1223,6 +1298,7 @@
 <li>Define agent passport and risk tiers.</li>
 <li>Inventory known agents and tools.</li>
 <li>Require owner, identity, and basic logging.</li>
+<li>Document containment owners, enforcement scope, and recovery authority.</li>
 <li>Publish initial policy and approved patterns.</li>
 </ul>
 </article>
@@ -1231,6 +1307,7 @@
 <h3>Automated gates and runtime policy</h3>
 <ul>
 <li>Adopt runtime enforcement for tool calls.</li>
+<li>Automate identity, tool, traffic, and application containment.</li>
 <li>Make evals part of release promotion.</li>
 <li>Launch reusable tool catalog.</li>
 <li>Connect observability to portfolio reporting.</li>
@@ -1243,6 +1320,7 @@
 <li>Automate drift detection and owner attestation.</li>
 <li>Certify agent templates and tool products.</li>
 <li>Use risk-based automated approvals.</li>
+<li>Drill coordinated containment and staged recovery.</li>
 <li>Measure reuse, cost, safety, and business impact.</li>
 </ul>
 </article>
@@ -1280,10 +1358,11 @@
 <div class="table-scroll"><table class="stack-table">
 <thead><tr><th scope="col">Governance capability</th><th scope="col">Microsoft mapping</th><th scope="col">Role</th></tr></thead>
 <tbody>
-<tr><td>Inventory and control plane</td><td>Microsoft Agent 365 Agent Registry, Agent Map, Connected platforms</td><td>Know which agents exist, which are ownerless/unmanaged, where they came from, and how they are used.</td></tr>
+<tr><td>Inventory and control plane</td><td>Microsoft Agent 365 Agent Registry, Agent Map, Connected platforms; Azure API Center</td><td>Know which agents exist, which are ownerless/unmanaged, where they came from, how they are used, and which APIs, A2A agents, or MCP servers they expose.</td></tr>
 <tr><td>Agent identity</td><td>Microsoft Entra Agent ID</td><td>Trace and authorize the specific agent that acted, including delegated access and revocation.</td></tr>
 <tr><td>User and app access</td><td>Microsoft Entra ID, RBAC, Conditional Access</td><td>Control users, groups, apps, resource access, and privileged operations.</td></tr>
 <tr><td>Runtime enforcement</td><td>Foundry controls, APIM GenAI Gateway, tool gateway, MCP policy layer, custom enforcement</td><td>Apply policy before tool calls, data movement, and side effects.</td></tr>
+<tr><td>Response and recovery</td><td>Agent 365 management actions, Entra Agent ID revocation, APIM policies, hosting/runtime controls, Defender/Intune, governed gateway</td><td>Coordinate availability blocking, identity and traffic revocation, runtime containment, re-attestation, staged restoration, and audit closure.</td></tr>
 <tr><td>Data protection and compliance</td><td>Microsoft Purview</td><td>Information protection, DLP, retention, compliance, and data-risk controls.</td></tr>
 <tr><td>Threat detection</td><td>Microsoft Defender</td><td>Detect risky or malicious agent behavior and protect agents at runtime.</td></tr>
 <tr><td>Observability</td><td>Agent 365, Foundry observability, Application Insights, Log Analytics</td><td>Monitor activity, usage, health, quality, cost, traces, and risk signals.</td></tr>
@@ -1306,6 +1385,7 @@
 <li>Purpose, users, environment, lifecycle state, and value hypothesis.</li>
 <li>Entra Agent ID, model/provider, data sources, tools, and permissions.</li>
 <li>Risk tier, required approvals, eval suite, guardrails, and audit retention.</li>
+<li>Containment owner, control scope, recovery authority, last drill, and known-good version.</li>
 <li>Dependencies, reusable components, version, and retirement date.</li>
 </ul>
 </article>
@@ -1372,9 +1452,9 @@
 <article class="layer">
 <div class="layer-name">Agent control plane</div>
 <div>
-<h3>Microsoft Agent 365 registry, map, and connected platforms</h3>
-<p>Agent 365 is the grounding control plane for the agent estate: centralized visibility, lifecycle management, access governance, ownerless-agent detection, unmanaged-agent signals, and external platform connections.</p>
-<div class="chip-row"><span class="chip">Agent 365</span><span class="chip">Agent Registry</span><span class="chip">Agent Map</span><span class="chip">Connected platforms</span></div>
+<h3>Microsoft Agent 365 governance plus API Center technical inventory</h3>
+<p>Agent 365 is the tenant-level governance and availability control plane for the agent estate. API Center complements it with a technical catalog of APIs, A2A agents, and MCP servers used by builders and platform teams.</p>
+<div class="chip-row"><span class="chip">Agent 365</span><span class="chip">Agent Registry</span><span class="chip">Agent Map</span><span class="chip">Connected platforms</span><span class="chip">API Center</span></div>
 </div>
 </article>
 <article class="layer">
@@ -1388,9 +1468,17 @@
 <article class="layer">
 <div class="layer-name">Runtime enforcement</div>
 <div>
-<h3>Policy before side effects, regardless of hosting pattern</h3>
+<h3>Authorize the exact action before side effects</h3>
 <p>Runtime enforcement can sit in Foundry, APIM GenAI Gateway, a tool gateway, an MCP policy layer, Temporal/workflow gates, ACA-hosted services, or custom enforcement code.</p>
 <div class="chip-row"><span class="chip">Foundry</span><span class="chip">APIM GenAI Gateway</span><span class="chip">Tool gateway</span><span class="chip">MCP policy</span><span class="chip">Custom enforcement</span></div>
+</div>
+</article>
+<article class="layer">
+<div class="layer-name">Response and recovery</div>
+<div>
+<h3>Coordinate containment, re-attestation, and staged restoration</h3>
+<p>Agent 365 can initiate supported management actions, while Entra, APIM, hosting, endpoint, network, data, and application controls enforce containment within their scopes. Recovery restores read access before write access and requires explicit evidence and sign-off.</p>
+<div class="chip-row"><span class="chip">Agent 365 actions</span><span class="chip">Entra revocation</span><span class="chip">APIM controls</span><span class="chip">Runtime isolation</span><span class="chip">Staged recovery</span></div>
 </div>
 </article>
 <article class="layer">

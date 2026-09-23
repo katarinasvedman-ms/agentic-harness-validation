@@ -8,7 +8,7 @@ This report describes the bounded deterministic plan-verification claim. It does
 | --- | --- |
 | Executable verifier source set | `2830609c829e0b8c6b40b564e8f996df1bf6974fc4af4d6dfe5cb8cb9aee5969` |
 | Dafny proof set | `65125d5e0e38300820bb90474fa2a09ab74ac713b5ae5165ce4d8eed4200bd86` |
-| Verification specification | `bffce34a2f80785ae734c3ebd01302bfab04f3aed1a1111f063a6d7a95340382` |
+| Verification specification | `c419b192cc1ff8c1810e1e66f2bbcac1dc4df1b264577a85a46efbc84cb90cc8` |
 | Plan schema | `1.0` |
 | Verifier | `0.1.0` |
 | LemmaScript | `0.5.19` |

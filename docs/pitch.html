@@ -340,6 +340,7 @@
     .status.allow { color: var(--cp-success); }
     .status.deny { color: var(--cp-danger); }
     .status.ask { color: var(--cp-warning); }
+    .status.recover { color: var(--cp-accent); }
     .architecture {
       padding: 28px;
       border: 1px solid var(--cp-border);
@@ -653,7 +654,7 @@
             <div>
               <span class="scenario-label">Payments API outage</span>
               <h3>The agent helps restore service.</h3>
-              <p>It gathers evidence autonomously, but a production write cannot happen until every deterministic gate agrees. In the portfolio model, this is a <a href="agent-governance-presentation.html#risk">Tier 3 agent</a>: it can perform write actions, so it requires human approval, tool certification, audit, and a kill switch.</p>
+              <p>It gathers evidence autonomously, but a production write cannot happen until every deterministic gate agrees. In the portfolio model, this is a <a href="agent-governance-presentation.html#risk">Tier 3 agent</a>: it can perform write actions, so it requires human approval, tool certification, audit, scoped containment, and a tested recovery path.</p>
             </div>
             <div class="steps">
               <div class="step"><span class="step-icon">1</span><div><strong>Investigate</strong><small>Read metrics, logs, health, and incident context.</small></div><span class="status allow">Allowed</span></div>
@@ -672,7 +673,8 @@
               <div class="step"><span class="step-icon">1</span><div><strong>Untrusted content enters context</strong><small>The model can read it, but it cannot redefine trusted policy fields.</small></div><span class="status ask">Observed</span></div>
               <div class="step"><span class="step-icon">2</span><div><strong>Unsafe plan is proposed</strong><small>Confidential source data targets a public destination.</small></div><span class="status deny">Rejected</span></div>
               <div class="step"><span class="step-icon">3</span><div><strong>Direct tool attempt is intercepted</strong><small>Pre-tool governance denies the request before its handler runs.</small></div><span class="status deny">Denied</span></div>
-              <div class="step"><span class="step-icon">4</span><div><strong>Independent controls remain</strong><small>The gateway, identity, RBAC, and network boundary still prevent the action.</small></div><span class="status deny">No side effect</span></div>
+              <div class="step"><span class="step-icon">4</span><div><strong>Contain the execution scope</strong><small>The application gate prevents new governed actions while identity, gateway, and hosting controls provide production containment layers.</small></div><span class="status deny">Contained</span></div>
+              <div class="step"><span class="step-icon">5</span><div><strong>Re-attest and restore in stages</strong><small>Verify the known-good identity, policy, and deployment; restore read-only investigation before write access is explicitly re-enabled.</small></div><span class="status recover">Read-only → restored</span></div>
             </div>
           </div>
         </div>
@@ -706,7 +708,7 @@
             <div class="architecture-node">
               <span class="node-label">Govern</span>
               <strong>Verified plan + AGT</strong>
-              <p>Formal plan invariants, pre-tool policy, exact approval, kill switch, and action budgets.</p>
+              <p>Formal plan invariants, pre-tool policy, exact approval, application containment, staged recovery, and action budgets.</p>
             </div>
             <div class="architecture-node">
               <span class="node-label">Execute</span>
@@ -730,11 +732,11 @@
         </div>
         <div class="matrix">
           <article class="control"><span class="control-icon">P</span><div><h3>Pre-tool policy</h3><p>AGT evaluates a trusted action envelope before the Copilot tool handler can run.</p></div></article>
-          <article class="control"><span class="control-icon">V</span><div><h3>Verified plan gate</h3><p>Dafny-backed invariants cover declared capabilities, approvals, dependencies, data flow, and state transitions.</p></div></article>
+          <article class="control"><span class="control-icon">V</span><div><h3>Verified plan gate</h3><p>Dafny-backed invariants cover declared capabilities, approvals, dependencies, data flow, and state transitions. Authorization evaluates the structured plan and trusted action envelope, not the raw user prompt: a prompt does not reliably determine the actions selected later, especially when retrieved content can influence planning.</p></div></article>
           <article class="control"><span class="control-icon">H</span><div><h3>Exact human approval</h3><p>Approval binds to one immutable action digest, resource, environment, expiry, and single-use nonce.</p></div></article>
-          <article class="control"><span class="control-icon">G</span><div><h3>Gateway revalidation</h3><p>The execution boundary recomputes the digest and repeats policy, approval, budget, and kill-switch checks.</p></div></article>
-          <article class="control"><span class="control-icon">I</span><div><h3>Identity and RBAC</h3><p>A dedicated Entra agent identity receives only the permissions required for the bounded demo.</p></div></article>
-          <article class="control"><span class="control-icon">O</span><div><h3>Observability and audit</h3><p>Turns, decisions, approvals, proofs, and side effects share one correlated trace and durable evidence trail.</p></div></article>
+          <article class="control"><span class="control-icon">G</span><div><h3>Gateway revalidation</h3><p>The execution boundary recomputes the digest and repeats policy, approval, budget, and containment checks.</p></div></article>
+          <article class="control"><span class="control-icon">I</span><div><h3>Identity and RBAC</h3><p>The local demo uses a bounded identity adapter. Production targets a dedicated Entra Agent ID with only the permissions required for the approved task.</p></div></article>
+          <article class="control"><span class="control-icon">O</span><div><h3>Observability and audit</h3><p>The local demo correlates decisions, approvals, proofs, and side effects in a hash-linked record. Durable external evidence storage is a production requirement.</p></div></article>
         </div>
       </div>
     </section>
@@ -772,18 +774,20 @@
         </div>
         <div class="table-block">
           <h3>Technology stack</h3>
-          <p>The stack table names the frameworks, platforms, and assurance tools behind those boundaries. This demo intentionally mixes production Microsoft services with preview and research-stage tools to show the frontier; it is not a blanket deployment recommendation.</p>
+          <p>The stack table names the frameworks, platforms, and assurance tools behind those boundaries. This reference implementation deliberately mixes GA Microsoft services with preview and research-stage components to explore a high-assurance architecture; it is not a recommended production bill of materials.</p>
           <table class="tech-table">
             <thead><tr><th>Layer</th><th>Framework or platform</th><th>Maturity / source</th><th>Role in the solution</th></tr></thead>
             <tbody>
-              <tr><td>Managed runtime</td><td>Microsoft Foundry Hosted Agents / AI Foundry</td><td>Microsoft, platform service</td><td>Container hosting, endpoint, identity, isolation, scaling, and lifecycle for the hosted agent surface.</td></tr>
-              <tr><td>Inner agentic loop</td><td>GitHub Copilot SDK + Copilot CLI</td><td>Microsoft / GitHub, developer stack</td><td>Reason-act-observe turns, custom tools, streaming, context, and loop events.</td></tr>
-              <tr><td>Outer composition</td><td>Microsoft Agent Framework on .NET</td><td>Microsoft, framework / preview-oriented</td><td>Standard agent abstraction, workflow composition, and provider interoperability around the governed host.</td></tr>
-              <tr><td>Runtime governance</td><td>Microsoft Agent Governance Toolkit (AGT)</td><td>Microsoft-owned governance toolkit</td><td>Deterministic allow, deny, or approval-required decisions plus audit and operational controls.</td></tr>
-              <tr><td>Formal assurance</td><td>TypeScript, Dafny, and LemmaScript</td><td>Mixed: Microsoft / open source plus third-party tech preview</td><td>Prove selected deterministic plan and state-machine invariants before governed execution.</td></tr>
-              <tr><td>Infrastructure control</td><td>Microsoft Entra ID + Azure RBAC</td><td>Microsoft, GA</td><td>Least-privilege identity and the physical limit on reachable operations.</td></tr>
-              <tr><td>Quality and operations</td><td>Foundry evaluations + Application Insights</td><td>Microsoft, platform services</td><td>Regression gates, adversarial evaluation, traces, metrics, and production assurance.</td></tr>
-              <tr><td>Research extension</td><td>Rust / Verus</td><td>Rust ecosystem plus academic / research-stage verification</td><td>Potential high-assurance runtime components after the initial demo.</td></tr>
+              <tr><td>Managed runtime</td><td>Microsoft Foundry Hosted Agents</td><td>Microsoft, GA core capability; feature-specific previews labelled separately</td><td>Container hosting, endpoint, identity, isolation, scaling, and lifecycle for the hosted agent surface.</td></tr>
+              <tr><td>Inner agentic loop</td><td>GitHub Copilot SDK + Copilot CLI</td><td>GitHub / Microsoft, public preview</td><td>Reason-act-observe turns, custom tools, streaming, context, and loop events.</td></tr>
+              <tr><td>Outer composition</td><td>Microsoft Agent Framework 1.0 on .NET</td><td>Microsoft open source, GA</td><td>Standard agent abstraction, workflow composition, and provider interoperability around the governed host.</td></tr>
+              <tr><td>Runtime governance</td><td>Agent Governance Toolkit (AGT)</td><td>Microsoft-maintained open source, public preview</td><td>Deterministic allow, deny, or approval-required decisions plus audit and operational controls.</td></tr>
+              <tr><td>Verifier implementation</td><td>TypeScript</td><td>Microsoft open source language and toolchain</td><td>Parse and evaluate the concrete bounded plan used by the runtime.</td></tr>
+              <tr><td>Formal model</td><td>Dafny</td><td>Microsoft Research origin, open source</td><td>Prove selected invariants of the bounded deterministic authorization model.</td></tr>
+              <tr><td>Proof experiment</td><td>LemmaScript</td><td>Third-party, tech preview, non-Microsoft</td><td>Generate a restricted proof representation for selected TypeScript predicates.</td></tr>
+              <tr><td>Infrastructure control</td><td>Microsoft Entra Agent ID + Azure RBAC</td><td>Microsoft, GA</td><td>Least-privilege identity and the physical limit on reachable operations.</td></tr>
+              <tr><td>Quality and operations</td><td>Foundry evaluations + Application Insights</td><td>Microsoft; GA services with capability-specific previews</td><td>Regression gates, adversarial evaluation, traces, metrics, and production assurance.</td></tr>
+              <tr><td>Research extension</td><td>Rust / Verus</td><td>Academic and open-source research, non-Microsoft</td><td>Potential high-assurance runtime components after the initial demo.</td></tr>
             </tbody>
           </table>
           <p class="architecture-note">
@@ -830,7 +834,7 @@
               <li>Exact approval and gateway recheck</li>
               <li>Continuous evaluation</li>
               <li>Budgets and circuit breakers</li>
-              <li>Kill switch and correlated audit</li>
+              <li>Scoped containment, staged recovery, and correlated audit</li>
             </ul>
           </article>
         </div>

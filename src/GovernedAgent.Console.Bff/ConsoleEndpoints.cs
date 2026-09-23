@@ -35,8 +35,8 @@ public static class ConsoleEndpoints
             HttpContext context,
             ConsoleState state) => MutateApproval(
                 requestId, request, ApprovalDecision.Rejected, context, state));
-        api.MapPut("/controls/kill-switch", (
-            KillSwitchMutation request,
+        api.MapPut("/controls/containment", (
+            ContainmentMutation request,
             HttpContext context,
             ConsoleState state) =>
         {
@@ -49,8 +49,63 @@ public static class ConsoleEndpoints
                 return denied;
             }
 
-            return ValidateReason(request.Reason, () =>
-                Results.Ok(state.SetKillSwitch(request.Active, request.Reason)));
+            return MutateControl(() => Results.Ok(state.SetContainment(
+                request.Active,
+                request.Reason,
+                DemoIdentity.Current(context))));
+        });
+        api.MapPut("/controls/kill-switch", (
+            ContainmentMutation request,
+            HttpContext context,
+            ConsoleState state) =>
+        {
+            var denied = DemoIdentity.Require(
+                context.Request,
+                DemoIdentity.IncidentCommanderRole,
+                DemoIdentity.GovernanceOperatorRole);
+            if (denied is not null)
+            {
+                return denied;
+            }
+
+            return MutateControl(() => Results.Ok(state.SetContainment(
+                request.Active,
+                request.Reason,
+                DemoIdentity.Current(context))));
+        });
+        api.MapPost("/controls/recovery/reattest", (
+            ReattestationMutation request,
+            HttpContext context,
+            ConsoleState state) =>
+        {
+            var denied = DemoIdentity.Require(
+                context.Request,
+                DemoIdentity.GovernanceOperatorRole);
+            if (denied is not null)
+            {
+                return denied;
+            }
+
+            return MutateControl(() => Results.Ok(state.BeginReadOnlyRecovery(
+                request,
+                DemoIdentity.Current(context))));
+        });
+        api.MapPost("/controls/recovery/restore", (
+            RecoveryMutation request,
+            HttpContext context,
+            ConsoleState state) =>
+        {
+            var denied = DemoIdentity.Require(
+                context.Request,
+                DemoIdentity.IncidentCommanderRole);
+            if (denied is not null)
+            {
+                return denied;
+            }
+
+            return MutateControl(() => Results.Ok(state.RestoreOperational(
+                request,
+                DemoIdentity.Current(context))));
         });
         api.MapPost("/simulator/reset", (HttpContext context, ConsoleState state) =>
         {
@@ -110,6 +165,28 @@ public static class ConsoleEndpoints
                     detail: exception.Message);
             }
         });
+    }
+
+    private static IResult MutateControl(Func<IResult> mutation)
+    {
+        try
+        {
+            return mutation();
+        }
+        catch (ArgumentException exception)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Invalid control request",
+                detail: exception.Message);
+        }
+        catch (InvalidOperationException exception)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Invalid control transition",
+                detail: exception.Message);
+        }
     }
 
     private static IResult Read<T>(Func<T> read)

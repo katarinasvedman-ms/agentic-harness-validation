@@ -3,7 +3,7 @@ import './App.css'
 import { demo } from './mockData'
 import type { AgentEvent } from './domain'
 
-const formatStatus = (value: string) => value.replace('-', ' ')
+const formatStatus = (value: string) => value.replaceAll('-', ' ')
 
 function StatusPill({ value }: { value: string }) {
   return <span className={`pill pill--${value}`}>{formatStatus(value)}</span>
@@ -24,8 +24,32 @@ function TimelineEvent({ event }: { event: AgentEvent }) {
 }
 
 function App() {
-  const [killSwitch, setKillSwitch] = useState<'armed' | 'triggered'>(demo.policy.killSwitch)
+  const [containmentMode, setContainmentMode] = useState(demo.policy.containmentMode)
   const incident = demo.incident
+  const advanceContainment = () => {
+    setContainmentMode((value) => {
+      if (value === 'operational') return 'contained'
+      if (value === 'contained') return 'read-only-recovery'
+      return 'operational'
+    })
+  }
+  const containmentCopy = containmentMode === 'operational'
+    ? {
+        title: 'Operational after staged recovery',
+        detail: 'Normal policy and exact approval requirements are active.',
+        action: 'Activate containment',
+      }
+    : containmentMode === 'contained'
+      ? {
+          title: 'New governed execution stopped',
+          detail: 'Re-attestation is required before diagnostic access is restored.',
+          action: 'Begin read-only recovery',
+        }
+      : {
+          title: 'Read-only recovery',
+          detail: 'Diagnostic reads are available; writes remain denied pending sign-off.',
+          action: 'Restore operational access',
+        }
 
   return (
     <div className="app-shell">
@@ -64,6 +88,8 @@ function App() {
           <span><b className="dot dot--accent" /> Exact approval</span>
           <span aria-hidden="true">→</span>
           <span><b className="dot dot--success" /> Remediation complete</span>
+          <span aria-hidden="true">·</span>
+          <span><b className="dot dot--success" /> Recovery path evidenced</span>
         </div>
 
         <div className="layout">
@@ -127,16 +153,21 @@ function App() {
 
             <section className="panel" aria-labelledby="policy-title">
               <div className="panel__heading">
-                <div><p className="eyebrow">Independent control plane</p><h2 id="policy-title">Policy &amp; kill switch</h2></div>
-                <StatusPill value={killSwitch} />
+                <div><p className="eyebrow">Independent control plane</p><h2 id="policy-title">Containment &amp; recovery</h2></div>
+                <StatusPill value={containmentMode} />
               </div>
-              <div className={`kill-switch kill-switch--${killSwitch}`}>
-                <div><strong>{killSwitch === 'armed' ? 'Execution gateway active' : 'All execution stopped'}</strong><p>{killSwitch === 'armed' ? 'Every action requires a verified, unexpired approval.' : 'Investigation remains available; tools are denied.'}</p></div>
-                <button type="button" className="switch" role="switch" aria-checked={killSwitch === 'triggered'} onClick={() => setKillSwitch((value) => value === 'armed' ? 'triggered' : 'armed')}>
-                  <span aria-hidden="true" /><span className="sr-only">{killSwitch === 'armed' ? 'Trigger global kill switch' : 'Reset kill switch for demo'}</span>
+              <div className={`kill-switch kill-switch--${containmentMode}`}>
+                <div><strong>{containmentCopy.title}</strong><p>{containmentCopy.detail}</p></div>
+                <button type="button" className="control-action" onClick={advanceContainment}>
+                  {containmentCopy.action}
                 </button>
               </div>
               <dl className="policy-meta"><div><dt>Policy</dt><dd>{demo.policy.policyVersion}</dd></div><div><dt>Mode</dt><dd>{demo.policy.enforcement}</dd></div><div><dt>Evaluated</dt><dd>{demo.policy.lastEvaluatedAt}</dd></div></dl>
+              <dl className="recovery-details">
+                <div><dt>Known-good version</dt><dd><code>{demo.policy.reattestation.knownGoodVersion}</code></dd></div>
+                <div><dt>Re-attested by</dt><dd>{demo.policy.reattestation.attestedBy}</dd></div>
+                <div><dt>Recovery sign-off</dt><dd>{demo.policy.recoverySignOff.actor}</dd></div>
+              </dl>
               <p className="scope-label">Current capabilities</p>
               <ul className="scope-list">{demo.policy.privileges.map((privilege) => <li key={privilege}>{privilege}</li>)}</ul>
             </section>

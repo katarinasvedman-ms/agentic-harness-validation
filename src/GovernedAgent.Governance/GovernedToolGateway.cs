@@ -40,7 +40,7 @@ public sealed class GovernedToolGateway(
     IPolicyEvaluator policyEvaluator,
     IApprovalStore approvalStore,
     IExecutionBudgetStore budgetStore,
-    IKillSwitch killSwitch,
+    IContainmentControl containmentControl,
     IAuditChain auditChain,
     IGovernedToolExecutor executor,
     TimeProvider? timeProvider = null)
@@ -78,26 +78,29 @@ public sealed class GovernedToolGateway(
             var approvalRequired = RequiresApproval(step);
             var approvalRequest = CreateApprovalRequest(request, step, digest.Value, now);
             var hasApproval = !approvalRequired;
-            if (killSwitch.IsActive)
+            if (containmentControl.Mode != ContainmentMode.Operational)
             {
-                var killSwitchPolicy = await EvaluatePolicyAsync(
+                var containmentPolicy = await EvaluatePolicyAsync(
                     request,
                     tool,
                     budgetAvailable: true,
                     hasApproval: false,
                     cancellationToken);
-                evaluatedPolicy = killSwitchPolicy;
-                AppendAudit(
-                    request,
-                    digest.Value,
-                    killSwitchPolicy,
-                    ExecutionState.Denied,
-                    now);
-                denialAudited = true;
-                throw Error(
-                    ErrorCategory.PolicyDenied,
-                    killSwitchPolicy.ReasonCode,
-                    "The governed gateway denied the action.");
+                evaluatedPolicy = containmentPolicy;
+                if (containmentPolicy.Decision == GovernanceDecision.Deny)
+                {
+                    AppendAudit(
+                        request,
+                        digest.Value,
+                        containmentPolicy,
+                        ExecutionState.Denied,
+                        now);
+                    denialAudited = true;
+                    throw Error(
+                        ErrorCategory.PolicyDenied,
+                        containmentPolicy.ReasonCode,
+                        "The governed gateway denied the action.");
+                }
             }
 
             if (approvalRequired)
@@ -143,7 +146,7 @@ public sealed class GovernedToolGateway(
                 new PolicyEvaluationContext(
                     request.Envelope,
                     tool,
-                    killSwitch.IsActive,
+                    containmentControl.Mode,
                     budgetAvailable,
                     hasApproval),
                 cancellationToken);
@@ -179,6 +182,27 @@ public sealed class GovernedToolGateway(
                     "The governed gateway denied the action.");
             }
 
+            if (!containmentControl.TryBeginExecution(
+                    step.Effect,
+                    out var executionAdmission,
+                    out var observedMode))
+            {
+                var containmentPolicy = CreateContainmentDenial(observedMode);
+                evaluatedPolicy = containmentPolicy;
+                AppendAudit(
+                    request,
+                    digest.Value,
+                    containmentPolicy,
+                    ExecutionState.Denied,
+                    _timeProvider.GetUtcNow());
+                denialAudited = true;
+                throw Error(
+                    ErrorCategory.PolicyDenied,
+                    containmentPolicy.ReasonCode,
+                    "The governed gateway denied the action.");
+            }
+
+            using var admission = executionAdmission!;
             if (approvalRequired &&
                 !approvalStore.TryConsume(
                     request.ApprovalNonce!,
@@ -247,7 +271,7 @@ public sealed class GovernedToolGateway(
             new PolicyEvaluationContext(
                 request.Envelope,
                 tool,
-                killSwitch.IsActive,
+                containmentControl.Mode,
                 budgetAvailable,
                 hasApproval),
             cancellationToken);
@@ -255,6 +279,16 @@ public sealed class GovernedToolGateway(
     private static bool RequiresApproval(PlanStep step) =>
         step.Resource.Environment == TargetEnvironment.Production &&
         step.Effect == EffectKind.Write;
+
+    private PolicyDecision CreateContainmentDenial(ContainmentMode mode) =>
+        new(
+            GovernanceDecision.Deny,
+            mode == ContainmentMode.ReadOnlyRecovery
+                ? "recovery_read_only"
+                : "containment_active",
+            mode == ContainmentMode.ReadOnlyRecovery ? "POL-008" : "POL-001",
+            "1.0",
+            _timeProvider.GetUtcNow());
 
     private static ApprovalConsumptionRequest CreateApprovalRequest(
         GovernedToolRequest request,

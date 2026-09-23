@@ -34,6 +34,33 @@ export const demo: IncidentDemo = {
     },
     {
       id: 'evt-03',
+      at: '09:58:21',
+      kind: 'containment',
+      actor: 'Governance operator',
+      title: 'Application containment activated',
+      detail: 'The governed gateway denied new execution while the suspicious input and deployment state were reviewed.',
+      outcome: 'contained',
+    },
+    {
+      id: 'evt-04',
+      at: '09:58:31',
+      kind: 'recovery',
+      actor: 'Governance operator',
+      title: 'Known-good state re-attested',
+      detail: 'Identity, policy, tool registry, and deployment digest matched the approved baseline; diagnostic reads were restored first.',
+      outcome: 'recovering',
+    },
+    {
+      id: 'evt-05',
+      at: '09:58:38',
+      kind: 'recovery',
+      actor: 'Maya Chen',
+      title: 'Operational access restored',
+      detail: 'The incident commander signed off the root cause and restored write eligibility under normal approval policy.',
+      outcome: 'restored',
+    },
+    {
+      id: 'evt-06',
       at: '09:58:42',
       kind: 'plan-verified',
       actor: 'Plan verifier',
@@ -42,7 +69,7 @@ export const demo: IncidentDemo = {
       outcome: 'safe',
     },
     {
-      id: 'evt-04',
+      id: 'evt-07',
       at: '10:00:09',
       kind: 'approval',
       actor: 'Maya Chen',
@@ -51,7 +78,7 @@ export const demo: IncidentDemo = {
       outcome: 'approved',
     },
     {
-      id: 'evt-05',
+      id: 'evt-08',
       at: '10:00:15',
       kind: 'execution',
       actor: 'Execution gateway',
@@ -60,7 +87,7 @@ export const demo: IncidentDemo = {
       outcome: 'approved',
     },
     {
-      id: 'evt-06',
+      id: 'evt-09',
       at: '10:00:18',
       kind: 'evidence',
       actor: 'Sentinel',
@@ -92,7 +119,7 @@ export const demo: IncidentDemo = {
   policy: {
     policyVersion: 'v3.14.2',
     enforcement: 'enforced',
-    killSwitch: 'armed',
+    containmentMode: 'operational',
     privileges: [
       'get_incident · incident.read',
       'query_metrics · telemetry.metrics.read',
@@ -102,12 +129,24 @@ export const demo: IncidentDemo = {
       'restore_service_state · service.restore',
     ],
     lastEvaluatedAt: '10:00:15 UTC',
+    reattestation: {
+      artifactDigest: 'aaaaaaaa…aaaaaaaa',
+      knownGoodVersion: 'agent-image:sha256:known-good',
+      attestedBy: 'operator@example.test',
+    },
+    recoverySignOff: {
+      actor: 'Maya Chen · Incident commander',
+      rootCause: 'Removed the untrusted integration and verified the known-good deployment.',
+    },
   },
   audit: [
     { sequence: 8041, at: '09:58:18', event: 'log.untrusted_content_observed', digest: '9a61…e2c0', previousDigest: '482b…110e' },
-    { sequence: 8042, at: '09:58:42', event: 'plan.verified', digest: 'c428…fb7d', previousDigest: '9a61…e2c0' },
-    { sequence: 8043, at: '10:00:09', event: 'approval.granted', digest: 'e913…48aa', previousDigest: 'c428…fb7d' },
-    { sequence: 8044, at: '10:00:15', event: 'restart_service.executed', digest: 'bb09…34f1', previousDigest: 'e913…48aa' },
-    { sequence: 8045, at: '10:00:18', event: 'get_service_health.verified', digest: 'aa18…61c2', previousDigest: 'bb09…34f1' },
+    { sequence: 8042, at: '09:58:21', event: 'containment.activate', digest: '105c…ab91', previousDigest: '9a61…e2c0' },
+    { sequence: 8043, at: '09:58:31', event: 'recovery.reattest', digest: '73b8…ef22', previousDigest: '105c…ab91' },
+    { sequence: 8044, at: '09:58:38', event: 'recovery.restore', digest: '0fd4…c812', previousDigest: '73b8…ef22' },
+    { sequence: 8045, at: '09:58:42', event: 'plan.verified', digest: 'c428…fb7d', previousDigest: '0fd4…c812' },
+    { sequence: 8046, at: '10:00:09', event: 'approval.granted', digest: 'e913…48aa', previousDigest: 'c428…fb7d' },
+    { sequence: 8047, at: '10:00:15', event: 'restart_service.executed', digest: 'bb09…34f1', previousDigest: 'e913…48aa' },
+    { sequence: 8048, at: '10:00:18', event: 'get_service_health.verified', digest: 'aa18…61c2', previousDigest: 'bb09…34f1' },
   ],
 }

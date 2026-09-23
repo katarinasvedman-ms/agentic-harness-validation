@@ -61,7 +61,9 @@ dd { margin: 0; }
 .pill { border: 1px solid var(--cp-border); border-radius: 99rem; color: var(--cp-text-muted); display: inline-flex; font-size: .68rem; font-weight: 800; letter-spacing: .06em; padding: .25rem .5rem; text-transform: uppercase; }
 .pill--high, .pill--blocked, .pill--triggered { background: color-mix(in srgb, var(--cp-danger) 12%, transparent); border-color: color-mix(in srgb, var(--cp-danger) 35%, transparent); color: var(--cp-danger); }
 .pill--remediating, .pill--approved { background: var(--cp-accent-soft); border-color: color-mix(in srgb, var(--cp-accent) 35%, transparent); color: var(--cp-accent); }
-.pill--safe, .pill--passed, .pill--verified, .pill--armed, .pill--resolved { background: color-mix(in srgb, var(--cp-success) 10%, transparent); border-color: color-mix(in srgb, var(--cp-success) 30%, transparent); color: var(--cp-success); }
+.pill--safe, .pill--passed, .pill--verified, .pill--operational, .pill--restored, .pill--resolved { background: color-mix(in srgb, var(--cp-success) 10%, transparent); border-color: color-mix(in srgb, var(--cp-success) 30%, transparent); color: var(--cp-success); }
+.pill--contained { background: color-mix(in srgb, var(--cp-danger) 12%, transparent); border-color: color-mix(in srgb, var(--cp-danger) 35%, transparent); color: var(--cp-danger); }
+.pill--read-only-recovery, .pill--recovering { background: var(--cp-accent-soft); border-color: color-mix(in srgb, var(--cp-accent) 35%, transparent); color: var(--cp-accent); }
 
 .story-strip { background: var(--cp-panel); border: 1px solid var(--cp-border); border-radius: .8rem; box-shadow: 0 1px 2px color-mix(in srgb, var(--cp-text) 8%, transparent); flex-wrap: wrap; font-size: .78rem; gap: .75rem; margin: 2.4rem 0 1rem; padding: .8rem 1rem; }
 .story-strip strong { margin-right: auto; }
@@ -114,16 +116,19 @@ code { background: var(--cp-surface-soft); border-radius: .25rem; font-family: u
 
 .kill-switch { align-items: center; background: var(--cp-surface-soft); border: 1px solid var(--cp-border); border-radius: .65rem; display: flex; gap: 1rem; justify-content: space-between; padding: .8rem; }
 .kill-switch strong { font-size: .8rem; }.kill-switch p { color: var(--cp-text-muted); font-size: .7rem; line-height: 1.4; margin: .25rem 0 0; }
-.kill-switch--triggered { border-color: var(--cp-danger); }
-.switch { background: var(--cp-border-strong); border: 0; border-radius: 2rem; cursor: pointer; flex: 0 0 auto; height: 1.55rem; padding: .15rem; width: 2.8rem; }
-.switch span:first-child { background: white; border-radius: 50%; display: block; height: 1.25rem; transition: transform .18s; width: 1.25rem; }
-.switch[aria-checked="true"] { background: var(--cp-danger); }
-.switch[aria-checked="true"] span:first-child { transform: translateX(1.25rem); }
+.kill-switch--contained { border-color: var(--cp-danger); }
+.kill-switch--read-only-recovery { border-color: var(--cp-accent); }
+.control-action { background: var(--cp-accent); border: 0; border-radius: .4rem; color: var(--cp-accent-fg); cursor: pointer; flex: 0 0 auto; font-size: .68rem; font-weight: 750; padding: .55rem .7rem; }
+.control-action:hover { filter: brightness(.96); }
 .policy-meta { display: grid; grid-template-columns: repeat(3, 1fr); margin: 1rem 0; }
 .policy-meta div { border-right: 1px solid var(--cp-border); padding: 0 .5rem; }.policy-meta div:first-child { padding-left: 0; }.policy-meta div:last-child { border: 0; }
 .policy-meta dt { font-size: .65rem; }.policy-meta dd { font-size: .75rem; font-weight: 650; margin-top: .2rem; }
 .scope-label { color: var(--cp-text-muted); margin: 0; }
 .scope-list { margin-top: .55rem; }
+.recovery-details { border-top: 1px solid var(--cp-border); display: grid; gap: .55rem; margin: 0 0 1rem; padding-top: .8rem; }
+.recovery-details div { display: grid; gap: .15rem; }
+.recovery-details dt { font-size: .65rem; }
+.recovery-details dd { font-size: .72rem; overflow-wrap: anywhere; }
 
 .table-scroll { overflow-x: auto; }
 table { border-collapse: collapse; font-size: .75rem; min-width: 38rem; width: 100%; }

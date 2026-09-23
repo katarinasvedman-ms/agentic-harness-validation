@@ -5,7 +5,7 @@ namespace GovernedAgent.Governance;
 public sealed record PolicyEvaluationContext(
     TrustedActionEnvelope Envelope,
     ToolMetadata Tool,
-    bool KillSwitchActive,
+    ContainmentMode ContainmentMode,
     bool BudgetAvailable,
     bool HasValidApproval);
 
@@ -34,9 +34,15 @@ public sealed class DefaultDenyPolicyEvaluator(
 
     private PolicyDecision Evaluate(PolicyEvaluationContext context)
     {
-        if (context.KillSwitchActive)
+        if (context.ContainmentMode == ContainmentMode.Contained)
         {
-            return Deny("kill_switch_active", "POL-001");
+            return Deny("containment_active", "POL-001");
+        }
+
+        if (context.ContainmentMode == ContainmentMode.ReadOnlyRecovery &&
+            context.Envelope.Action.Effect != EffectKind.Read)
+        {
+            return Deny("recovery_read_only", "POL-008");
         }
 
         if (!context.BudgetAvailable)

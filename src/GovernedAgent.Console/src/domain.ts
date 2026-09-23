@@ -3,6 +3,8 @@ export type IncidentStatus = 'contained' | 'remediating' | 'resolved'
 export type EventKind =
   | 'observation'
   | 'threat-blocked'
+  | 'containment'
+  | 'recovery'
   | 'plan-verified'
   | 'approval'
   | 'execution'
@@ -26,7 +28,7 @@ export interface AgentEvent {
   actor: string
   title: string
   detail: string
-  outcome: 'safe' | 'blocked' | 'pending' | 'approved'
+  outcome: 'safe' | 'blocked' | 'contained' | 'recovering' | 'restored' | 'pending' | 'approved'
 }
 
 export interface VerificationCheck {
@@ -54,9 +56,18 @@ export interface Approval {
 export interface PolicyState {
   policyVersion: string
   enforcement: 'enforced'
-  killSwitch: 'armed' | 'triggered'
+  containmentMode: 'operational' | 'contained' | 'read-only-recovery'
   privileges: readonly string[]
   lastEvaluatedAt: string
+  reattestation: {
+    artifactDigest: string
+    knownGoodVersion: string
+    attestedBy: string
+  }
+  recoverySignOff: {
+    actor: string
+    rootCause: string
+  }
 }
 
 export interface AuditEntry {

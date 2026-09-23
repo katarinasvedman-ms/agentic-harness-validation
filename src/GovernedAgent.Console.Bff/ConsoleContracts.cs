@@ -1,4 +1,5 @@
 using GovernedAgent.Core.Contracts;
+using GovernedAgent.Governance;
 using GovernedAgent.Simulator;
 
 namespace GovernedAgent.Console.Bff;
@@ -48,12 +49,24 @@ public sealed record ApprovalMutationResult(
     DateTimeOffset DecidedAt,
     string? ApprovalNonce);
 
-public sealed record KillSwitchMutation(bool Active, string Reason);
+public sealed record ContainmentMutation(bool Active, string Reason);
+
+public sealed record ReattestationMutation(
+    string ArtifactDigest,
+    string KnownGoodVersion,
+    string Reason);
+
+public sealed record RecoveryMutation(
+    string RootCause,
+    string Reason);
 
 public sealed record ControlsView(
+    ContainmentMode Mode,
     bool KillSwitchActive,
     int MaximumToolCalls,
-    int MaximumDurationSeconds);
+    int MaximumDurationSeconds,
+    ReattestationArtifact? Reattestation,
+    RecoverySignOff? SignOff);
 
 public sealed record AuditView(
     bool IntegrityValid,

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using GovernedAgent.Core.Contracts;
 using GovernedAgent.Governance;
 using GovernedAgent.Simulator;
@@ -9,7 +11,7 @@ public sealed class ConsoleState(
     IConsoleWorkflowSnapshotProvider workflow,
     IApprovalStore approvals,
     IAuditChain audit,
-    IKillSwitch killSwitch,
+    IContainmentControl containmentControl,
     ExecutionBudgetLimits limits,
     TimeProvider timeProvider)
 {
@@ -126,20 +128,107 @@ public sealed class ConsoleState(
     }
 
     public ControlsView GetControls() =>
-        new(killSwitch.IsActive, limits.MaximumToolCalls, (int)limits.MaximumDuration.TotalSeconds);
+        new(
+            containmentControl.Mode,
+            containmentControl.Mode == ContainmentMode.Contained,
+            limits.MaximumToolCalls,
+            (int)limits.MaximumDuration.TotalSeconds,
+            containmentControl.Reattestation,
+            containmentControl.SignOff);
 
-    public ControlsView SetKillSwitch(bool active, string reason)
+    public ControlsView SetContainment(
+        bool active,
+        string reason,
+        DemoIdentity identity)
     {
         ValidateReason(reason);
-        if (active)
+        ArgumentNullException.ThrowIfNull(identity);
+        if (!active)
         {
-            killSwitch.Activate();
-        }
-        else
-        {
-            killSwitch.Deactivate();
+            throw new InvalidOperationException(
+                "Containment can be cleared only through the staged recovery workflow.");
         }
 
+        lock (_sync)
+        {
+            containmentControl.Contain();
+            AppendControlAudit(
+                "containment.activate",
+                identity,
+                reason,
+                GovernanceDecision.Deny,
+                ExecutionState.Completed,
+                VerificationResult.Indeterminate);
+        }
+        return GetControls();
+    }
+
+    public ControlsView BeginReadOnlyRecovery(
+        ReattestationMutation request,
+        DemoIdentity identity)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(identity);
+        ValidateReason(request.Reason);
+        ValidateDigest(request.ArtifactDigest);
+        ValidateRequired(request.KnownGoodVersion, nameof(request.KnownGoodVersion), 200);
+
+        lock (_sync)
+        {
+            if (containmentControl.Mode != ContainmentMode.Contained)
+            {
+                throw new InvalidOperationException(
+                    "Read-only recovery can begin only from the contained state.");
+            }
+
+            var now = timeProvider.GetUtcNow();
+            AppendControlAudit(
+                "recovery.reattest",
+                identity,
+                $"{request.ArtifactDigest}:{request.KnownGoodVersion}:{request.Reason}",
+                GovernanceDecision.Allow,
+                ExecutionState.Verified,
+                VerificationResult.Verified);
+            containmentControl.BeginReadOnlyRecovery(new ReattestationArtifact(
+                request.ArtifactDigest,
+                request.KnownGoodVersion,
+                identity.Id,
+                now));
+        }
+        return GetControls();
+    }
+
+    public ControlsView RestoreOperational(
+        RecoveryMutation request,
+        DemoIdentity identity)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(identity);
+        ValidateReason(request.Reason);
+        ValidateRequired(request.RootCause, nameof(request.RootCause), 500);
+
+        lock (_sync)
+        {
+            if (containmentControl.Mode != ContainmentMode.ReadOnlyRecovery ||
+                containmentControl.Reattestation is null)
+            {
+                throw new InvalidOperationException(
+                    "Operational access can be restored only after re-attestation.");
+            }
+
+            var signOff = new RecoverySignOff(
+                identity.Id,
+                request.RootCause,
+                timeProvider.GetUtcNow());
+            AppendControlAudit(
+                "recovery.restore",
+                identity,
+                $"{request.RootCause}:{request.Reason}",
+                GovernanceDecision.Allow,
+                ExecutionState.Completed,
+                VerificationResult.Verified);
+            containmentControl.RestoreOperational(signOff);
+        }
         return GetControls();
     }
 
@@ -148,7 +237,6 @@ public sealed class ConsoleState(
     public void Reset()
     {
         simulator.Reset();
-        killSwitch.Deactivate();
         lock (_sync)
         {
             _pending = CreatePending(workflow, timeProvider);
@@ -181,6 +269,34 @@ public sealed class ConsoleState(
             string.Empty));
     }
 
+    private void AppendControlAudit(
+        string stepId,
+        DemoIdentity identity,
+        string evidence,
+        GovernanceDecision decision,
+        ExecutionState state,
+        VerificationResult verification)
+    {
+        var snapshot = workflow.GetSnapshot(IncidentSimulator.DemoIncidentId);
+        var digest = Convert.ToHexStringLower(
+            SHA256.HashData(Encoding.UTF8.GetBytes(evidence)));
+        audit.Append(new AuditRecord(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            $"control:{identity.Id}",
+            IncidentSimulator.DemoIncidentId,
+            snapshot.Verification.Plan.PlanId,
+            stepId,
+            digest,
+            decision,
+            snapshot.PolicyVersion,
+            verification,
+            state,
+            timeProvider.GetUtcNow(),
+            null,
+            string.Empty));
+    }
+
     private static PendingApprovalView CreatePending(
         IConsoleWorkflowSnapshotProvider workflow,
         TimeProvider timeProvider)
@@ -204,6 +320,33 @@ public sealed class ConsoleState(
         if (string.IsNullOrWhiteSpace(reason) || reason.Length > 500)
         {
             throw new ArgumentException("Reason must contain between 1 and 500 characters.");
+        }
+    }
+
+    private static void ValidateDigest(string digest)
+    {
+        if (string.IsNullOrEmpty(digest) ||
+            digest.Length != 64 ||
+            digest.Any(character =>
+                !char.IsAsciiDigit(character) &&
+                character is not (>= 'a' and <= 'f')))
+        {
+            throw new ArgumentException(
+                "Artifact digest must be 64 lowercase hexadecimal characters.",
+                nameof(digest));
+        }
+    }
+
+    private static void ValidateRequired(
+        string value,
+        string parameterName,
+        int maximumLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length > maximumLength)
+        {
+            throw new ArgumentException(
+                $"Value must contain between 1 and {maximumLength} characters.",
+                parameterName);
         }
     }
 }

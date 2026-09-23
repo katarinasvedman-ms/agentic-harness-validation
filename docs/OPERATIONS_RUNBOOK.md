@@ -35,7 +35,8 @@ The BFF has no separate readiness endpoint. A 200 `/health` plus a successful
 ## Reset and simulator state
 
 All BFF state is process-local and volatile. Reset restores `INC-1042`,
-degraded `payments-api-03`, version counters, pending approval, and kill switch.
+degraded `payments-api-03`, version counters, pending approval, and containment
+mode.
 It does not erase the in-memory audit chain.
 
 ```powershell
@@ -50,7 +51,7 @@ irm http://127.0.0.1:5072/api/incidents/INC-1042/evidence
 
 A full clean state, including audit, requires stopping and restarting the BFF.
 
-## Kill switch and approvals
+## Containment, recovery, and approvals
 
 The local headers are a demo identity adapter, **not authentication**.
 
@@ -62,12 +63,42 @@ $commander = @{
 $body = @{ active = $true; reason = "Presenter emergency-stop rehearsal." } |
   ConvertTo-Json
 irm -Method Put -Headers $commander -ContentType application/json -Body $body `
-  http://127.0.0.1:5072/api/controls/kill-switch
+  http://127.0.0.1:5072/api/controls/containment
 irm http://127.0.0.1:5072/api/controls
 ```
 
-Reset deactivates the switch. Approval requires the exact pending request ID,
-the exact lowercase `incident-commander` role, a nonblank reason, and an
+Containment cannot be cleared directly. A governance operator must re-attest a
+64-character lowercase hexadecimal artifact digest and known-good version,
+which enters `ReadOnlyRecovery`. Reads remain eligible in that mode, but writes
+and deletes remain denied. An incident commander must then provide a nonblank
+root-cause statement to restore `Operational` mode. Each transition is written
+to the hash-linked local audit chain.
+
+```powershell
+$operator = @{
+  "X-Demo-User" = "operator@example.test"
+  "X-Demo-Roles" = "governance-operator"
+}
+$reattest = @{
+  artifactDigest = ("a" * 64)
+  knownGoodVersion = "agent-image:sha256:known-good"
+  reason = "Identity, policy, registry, and deployment match the approved baseline."
+} | ConvertTo-Json
+irm -Method Post -Headers $operator -ContentType application/json -Body $reattest `
+  http://127.0.0.1:5072/api/controls/recovery/reattest
+
+$restore = @{
+  rootCause = "Removed the untrusted integration and redeployed the known-good image."
+  reason = "Incident commander approved staged restoration."
+} | ConvertTo-Json
+irm -Method Post -Headers $commander -ContentType application/json -Body $restore `
+  http://127.0.0.1:5072/api/controls/recovery/restore
+```
+
+Reset does not change containment or recovery state; this prevents the demo
+fixture reset from becoming an operational bypass. A full control-state reset
+requires restarting the local BFF. Approval requires the exact pending request
+ID, the exact lowercase `incident-commander` role, a nonblank reason, and an
 unexpired request. A decision removes the pending request; approval artifacts
 are digest-bound and single-use. Use the rehearsal script instead of manually
 copying nonces when demonstrating execution semantics.
@@ -94,6 +125,7 @@ and identifiers; review before sharing. They contain no intended credentials.
 | BFF never becomes healthy | Read `.artifacts\rehearsal\bff.stdout.log` and `bff.stderr.log`; run `dotnet build GovernedAgentDemo.sln`. |
 | 401/403 mutation | Supply exactly one safe `X-Demo-User` and the exact lowercase required role. |
 | 404 approval | Reset; the request was absent, expired, decided, or replayed. |
+| 409 recovery mutation | Follow `Contained` -> `ReadOnlyRecovery` -> `Operational`; do not skip or repeat a stage. |
 | Verification failure | Run `npm run build --workspace @governed-agent/plan-verifier`; do not bypass the gate. |
 | Copilot spike fails on Windows | This is the documented upstream timestamp protocol issue; use the deterministic harness fallback. |
 | `/readiness` fails | Inspect host logs and verifier path; keep execution fail-closed. |

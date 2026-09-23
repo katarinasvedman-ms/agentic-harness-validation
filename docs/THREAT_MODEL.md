@@ -63,7 +63,7 @@ Out of scope for the MVP:
 - Deployment images and configuration.
 - Audit evidence and traces.
 - Evaluation datasets and baselines.
-- Kill-switch authority.
+- Containment and recovery authority.
 
 ### 3.2 Security properties
 
@@ -76,7 +76,7 @@ Out of scope for the MVP:
 | Audit records | Medium | Critical | High |
 | Agent deployment | Medium | Critical | High |
 | Evaluation datasets | Medium | High | Medium |
-| Kill switch | Medium | Critical | Critical |
+| Containment and recovery control | Medium | Critical | Critical |
 
 ## 4. Actors
 
@@ -597,10 +597,10 @@ Risk uses qualitative likelihood and impact:
 | Privilege escalation | Primary | Primary | - | Primary | Primary | Detection | - |
 | Data exfiltration | Partial | Primary | Secondary | Primary | Primary | Detection | Rate limits |
 | Approval bypass/replay | Primary | Primary | Primary | Primary | Primary | Detection | - |
-| Policy bypass | - | Primary when reached | - | Primary | Primary | Detection | Kill switch |
+| Policy bypass | - | Primary when reached | - | Primary | Primary | Detection | Layered containment |
 | Verification forgery | Digest binding | Primary | - | - | Primary | Detection | Fail closed |
 | Tool poisoning | - | MCP/tool policy | - | Secondary | Schema integrity | Detection | Disable tool |
-| Cascading failure | Compensation invariant | Policy budgets | Primary | - | Idempotency | Detection | Breaker/kill switch |
+| Cascading failure | Compensation invariant | Policy budgets | Primary | - | Idempotency | Detection | Breaker/containment |
 | Hook omission/replacement | - | Pre-tool hook | Secondary | - | Primary recheck | Conformance tests | Fail closed |
 | Built-in capability exposure | - | Explicit allowlist | - | Hosted identity/RBAC | Gateway-only tools | Startup and adversarial tests | Disable permissions/egress |
 | CLI/JSON-RPC tampering | - | Secondary | - | Hosted identity | Primary | Integrity telemetry | Disable runtime |
@@ -623,7 +623,7 @@ The MVP MUST include automated tests for:
 7. Confidential source to public sink.
 8. Forged verification result and digest mismatch.
 9. Policy engine and verifier outage.
-10. Kill switch during an active session.
+10. Containment during an active session and ordered recovery.
 11. Tool-schema drift.
 12. Duplicate write with the same idempotency key.
 13. Audit redaction.
@@ -675,7 +675,7 @@ control has been exercised.
 | `TM-19` Audit tampering | `AuditRecordsAreLinkedAndVerifiable`; `ExactApprovalIsOneTimeAndCreatesValidAuditRecord` | Rehearsal asserts `integrityValid=true`; durable storage deferred |
 | `TM-20` Cost exhaustion | `BudgetFailsClosedAfterConfiguredToolCalls`; suspension-store capacity/TTL tests | Estimated cost model and local limits |
 | `TM-21` Cascading failure | `RestartIsIdempotentAndRestorable`; `FreshApprovalAndSameIdempotencyKeyReplaysWithoutDuplicateWrite` | Simulator-only limitation stated |
-| `TM-22` Kill-switch bypass | `KillSwitchOverridesOtherwiseAllowedAction`; `GatewayDeniesWriteEvenWhenHookLayerIsBypassed` | API activates and reads back emergency stop |
+| `TM-22` Containment/recovery bypass | `ContainmentOverridesOtherwiseAllowedAction`; `GatewayDeniesWriteEvenWhenHookLayerIsBypassed`; `ContainmentRecoveryRequiresOrderedEvidenceAndClosesAudit`; read-only recovery policy tests | Rehearsal proves containment, re-attestation, staged restoration, and audit closure |
 | `TM-23` Evaluation gaming | Versioned local dataset evaluation and baseline/candidate contracts | Held-out production-derived evaluation remains future work |
 | `TM-24` Misleading assurance | Guarantee-report freshness check | `DEMO_GUIDE.md` customer-safe claims |
 | `TM-25` Hook omission | `DeniedWriteDoesNotEnterItsHandler`; pre-tool policy conformance tests | Gateway independently rechecks |

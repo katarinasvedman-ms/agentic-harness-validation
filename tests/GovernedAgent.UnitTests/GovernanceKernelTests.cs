@@ -117,18 +117,77 @@ public sealed class GovernanceKernelTests
     }
 
     [Fact]
-    public async Task KillSwitchOverridesOtherwiseAllowedAction()
+    public async Task ContainmentOverridesOtherwiseAllowedAction()
     {
         var context = CreatePolicyContext(hasApproval: true) with
         {
-            KillSwitchActive = true
+            ContainmentMode = ContainmentMode.Contained
         };
         var evaluator = new DefaultDenyPolicyEvaluator();
 
         var decision = await evaluator.EvaluateAsync(context, CancellationToken.None);
 
         Assert.Equal(GovernanceDecision.Deny, decision.Decision);
-        Assert.Equal("kill_switch_active", decision.ReasonCode);
+        Assert.Equal("containment_active", decision.ReasonCode);
+    }
+
+    [Fact]
+    public async Task ReadOnlyRecoveryDeniesWrite()
+    {
+        var context = CreatePolicyContext(hasApproval: true) with
+        {
+            ContainmentMode = ContainmentMode.ReadOnlyRecovery
+        };
+        var evaluator = new DefaultDenyPolicyEvaluator();
+
+        var decision = await evaluator.EvaluateAsync(context, CancellationToken.None);
+
+        Assert.Equal(GovernanceDecision.Deny, decision.Decision);
+        Assert.Equal("recovery_read_only", decision.ReasonCode);
+    }
+
+    [Fact]
+    public async Task ReadOnlyRecoveryAllowsRegisteredRead()
+    {
+        var context = CreatePolicyContext(
+            hasApproval: true,
+            toolName: "get_service_health") with
+        {
+            ContainmentMode = ContainmentMode.ReadOnlyRecovery
+        };
+        var evaluator = new DefaultDenyPolicyEvaluator();
+
+        var decision = await evaluator.EvaluateAsync(context, CancellationToken.None);
+
+        Assert.Equal(GovernanceDecision.Allow, decision.Decision);
+    }
+
+    [Fact]
+    public void RecoveryRequiresOrderedEvidence()
+    {
+        var control = new InMemoryContainmentControl();
+        var artifact = new ReattestationArtifact(
+            new string('a', 64),
+            "agent-image:sha256:known-good",
+            "governance-operator",
+            Now);
+        var signOff = new RecoverySignOff(
+            "incident-commander",
+            "Removed the untrusted integration and verified the known-good deployment.",
+            Now.AddMinutes(1));
+
+        Assert.Throws<InvalidOperationException>(
+            () => control.BeginReadOnlyRecovery(artifact));
+        Assert.Throws<InvalidOperationException>(
+            () => control.RestoreOperational(signOff));
+
+        control.Contain();
+        control.BeginReadOnlyRecovery(artifact);
+        control.RestoreOperational(signOff);
+
+        Assert.Equal(ContainmentMode.Operational, control.Mode);
+        Assert.Equal(artifact, control.Reattestation);
+        Assert.Equal(signOff, control.SignOff);
     }
 
     [Fact]
@@ -222,9 +281,11 @@ public sealed class GovernanceKernelTests
             "1.0",
             Now.AddMinutes(1));
 
-    private static PolicyEvaluationContext CreatePolicyContext(bool hasApproval)
+    private static PolicyEvaluationContext CreatePolicyContext(
+        bool hasApproval,
+        string toolName = "restart_service")
     {
-        var tool = new ToolRegistry().TryGet("restart_service", out var metadata)
+        var tool = new ToolRegistry().TryGet(toolName, out var metadata)
             ? metadata
             : throw new InvalidOperationException("Default tool registry is incomplete.");
         var envelope = new TrustedActionEnvelope(
@@ -251,7 +312,7 @@ public sealed class GovernanceKernelTests
         return new PolicyEvaluationContext(
             envelope,
             tool,
-            KillSwitchActive: false,
+            ContainmentMode.Operational,
             BudgetAvailable: true,
             HasValidApproval: hasApproval);
     }

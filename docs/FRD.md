@@ -103,7 +103,7 @@ The governance console is the customer-facing interface. It MUST display:
 - Pending approvals and their exact scope.
 - Tool execution status.
 - Trace correlation and evaluation summaries.
-- Kill-switch and circuit-breaker state.
+- Containment, read-only recovery, and circuit-breaker state.
 
 The console MUST distinguish model-generated content from deterministic control decisions.
 
@@ -147,6 +147,11 @@ The verified plan gate MUST:
 - Treat `indeterminate` as non-executable.
 - Produce a machine-readable result and human-readable reason.
 - Record verifier and specification versions.
+
+The gate evaluates the structured plan rather than the raw user prompt. A
+prompt does not reliably determine the action later selected by an agent,
+especially after indirect prompt injection; authorization therefore binds to
+the canonical proposed action and trusted envelope.
 
 ### 4.5 Agent Governance Toolkit integration
 
@@ -373,13 +378,18 @@ Requirements:
 - `WF-023`: Repeated violations MUST be able to open a circuit breaker.
 - `WF-024`: A Copilot hook error, timeout, or unknown decision MUST deny the tool request.
 
-### 6.4 Kill-switch workflow
+### 6.4 Containment and recovery workflow
 
-- `WF-030`: An authorized operator MUST be able to activate a kill switch.
+- `WF-030`: An authorized operator MUST be able to activate containment.
 - `WF-031`: Activation MUST set the effective policy to deny all new actions.
-- `WF-032`: An already executing write MAY run until its current attempt succeeds or reaches its timeout; it MUST NOT start a retry after kill-switch activation. All new execution and compensation transitions MUST be denied.
-- `WF-033`: Kill-switch activation and release MUST be audited.
-- `WF-034`: Release MUST require an authorized human and MUST NOT occur automatically.
+- `WF-032`: An already executing write MAY run until its current attempt succeeds or reaches its timeout; it MUST NOT start a retry after containment activation. All new execution and compensation transitions MUST be denied.
+- `WF-033`: Containment, re-attestation, read-only recovery, and restoration MUST be audited.
+- `WF-034`: Containment MUST NOT be cleared directly or automatically.
+- `WF-035`: Read-only recovery MUST require an authorized governance operator,
+  a known-good version, and a valid artifact digest.
+- `WF-036`: Read-only recovery MUST continue to deny writes and deletes.
+- `WF-037`: Operational restoration MUST require incident-commander root-cause
+  sign-off after re-attestation.
 
 ## 7. Trust boundaries
 
@@ -680,7 +690,8 @@ AND deployment configuration validates
 | Tool timeout | Stop or retry within configured bound; never retry non-idempotent writes blindly |
 | Digest mismatch | Deny and require a new plan/approval |
 | Unsupported schema | Reject |
-| Kill switch active | Deny new actions |
+| Containment active | Deny new actions |
+| Read-only recovery active | Allow eligible reads; deny writes and deletes |
 | Audit persistence failure | Deny high-impact action |
 
 ## 16. Performance and reliability targets
@@ -690,7 +701,7 @@ Initial demo targets:
 - Governance-policy evaluation p99 below 10 ms within the application boundary.
 - Verified plan decision below 500 ms for the bounded MVP plan.
 - Console policy decision display within 1 second of decision.
-- Kill-switch enforcement on new actions within 2 seconds.
+- Containment enforcement on new actions within 2 seconds.
 - No more than one write execution for one idempotency key.
 - Nineteen successful complete runs in twenty consecutive rehearsals.
 
@@ -724,7 +735,9 @@ These are demo engineering targets, not public service-level commitments.
 - `AC-012`: Prompt-injected exfiltration is blocked before network side effect.
 - `AC-013`: Expired, replayed, revoked, or modified approvals are rejected.
 - `AC-014`: The agent's RBAC identity cannot perform prohibited operations.
-- `AC-015`: Kill-switch activation denies subsequent actions.
+- `AC-015`: Containment activation denies subsequent actions.
+- `AC-015A`: Recovery cannot skip re-attestation or the read-only stage.
+- `AC-015B`: Only incident-commander sign-off restores write authority.
 - `AC-016`: A failed or missing Copilot hook produces no tool side effect.
 - `AC-017`: Built-in shell, filesystem, and unrestricted URL operations are unavailable.
 - `AC-018`: Hook and gateway action digests match for every executed action.
