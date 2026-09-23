@@ -57,6 +57,10 @@ Assert-Matches $presentation 're-attestation' `
     "The presentation must describe re-attestation."
 Assert-Matches $presentation 'read-only' `
     "The presentation must describe staged read-only recovery."
+Assert-Matches $presentation 'Task-scoped authority' `
+    "The presentation must describe verified-intent capability leasing."
+Assert-Matches $presentation 'not an Entra token or dynamic Azure RBAC grant' `
+    "The presentation must preserve the local capability-lease boundary."
 
 Assert-Matches $pitch 'structured plan and trusted action envelope, not the raw user prompt' `
     "The pitch must explain why authorization evaluates the structured plan rather than the raw prompt."
@@ -76,6 +80,10 @@ Assert-Matches $pitch 'not a recommended production bill of materials' `
     "The technology table must include the frontier-stack disclaimer."
 Assert-Matches $pitch 'restore read-only' `
     "The pitch incident path must include staged recovery."
+Assert-Matches $pitch '90-second, one-use capability lease' `
+    "The pitch must show the task-scoped capability-lease lifecycle."
+Assert-Matches $pitch 'not an Entra token or dynamic Azure RBAC grant' `
+    "The pitch must not present the local lease as production identity authority."
 
 $governanceDocs = Get-ChildItem $docsRoot -File |
     Where-Object { $_.Extension -in ".html", ".md" }

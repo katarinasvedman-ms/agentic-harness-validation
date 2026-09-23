@@ -52,7 +52,8 @@ flowchart LR
         Planner --> Verify[Verified plan gate for writes]
         Verify --> Policy[AGT policy adapter]
         Policy --> Approval[Approval validator]
-        Approval --> Gateway[Governed tool gateway]
+        Approval --> Lease[Task-scoped capability lease]
+        Lease --> Gateway[Governed tool gateway]
         Gateway --> Recheck[Policy, approval, digest, and budget recheck]
     end
 
@@ -102,6 +103,7 @@ The governance console is the customer-facing interface. It MUST display:
 - Runtime policy decisions and reasons.
 - Pending approvals and their exact scope.
 - Tool execution status.
+- Capability-lease intent, scope, lifetime, use count, and lifecycle state.
 - Trace correlation and evaluation summaries.
 - Containment, read-only recovery, and circuit-breaker state.
 
@@ -171,7 +173,24 @@ The integration MUST:
 
 Copilot's native permission request MUST NOT be treated as enterprise approval. The authoritative approval artifact is defined in section 5.3 and is revalidated by the gateway.
 
-### 4.6 Governed tool gateway
+### 4.6 Capability-lease broker
+
+The local capability-lease broker MUST:
+
+- Issue a lease only for a verified trusted action after policy allows it and
+  any required approval is consumed.
+- Take intent from trusted tool-registry metadata, never model prose.
+- Bind identity, plan, action, intent, tool, effect, target, environment,
+  policy, verifier, lifetime, and maximum-use fields.
+- Permit exactly one atomic consumption in the local demo.
+- Reject changed, expired, consumed, completed, or revoked leases.
+- Revoke matching outstanding leases during containment.
+- Avoid exposing lease nonces through operator-facing read APIs.
+
+The local artifact is application-layer authorization, not an Entra token,
+Azure RBAC assignment, APIM credential, or production service credential.
+
+### 4.7 Governed tool gateway
 
 The tool gateway MUST be the only application path to operational tools.
 
@@ -182,13 +201,14 @@ It MUST:
 - Revalidate policy immediately before execution.
 - Recompute and compare the canonical action digest produced at the pre-tool hook.
 - Validate approval where required.
+- Issue and atomically consume an exact capability lease before dispatch.
 - Revalidate kill-switch state and action budgets immediately before execution.
 - Enforce idempotency for writes.
 - Apply timeouts, bounded retries, and response-size limits.
 - Sanitize tool output before returning it to the model.
 - Emit execution telemetry without leaking configured sensitive fields.
 
-### 4.7 Operational-system simulator
+### 4.8 Operational-system simulator
 
 The MVP MUST use simulated or isolated systems with deterministic seed data. It MUST NOT require customer production access.
 
@@ -320,6 +340,22 @@ Approval MUST become invalid when any bound field changes.
 
 For the MVP, a compensation action requires its own exact approval after the primary action fails. Approval of the primary action does not pre-authorize compensation. Bundled or pre-authorized compensation is deferred until a future specification defines independent action digests and single-use authorization for every bundled step.
 
+### 5.4 Capability lease
+
+A capability lease MUST bind:
+
+- User, agent, deployment, session, and incident identifiers.
+- Plan, step, plan digest, and canonical action digest.
+- Trusted intent class, tool, capability, and effect.
+- Resource and environment.
+- Policy and verifier versions.
+- Issued and expiration timestamps.
+- Maximum and consumed use counts.
+- Lifecycle state and optional revocation reason.
+
+The nonce MUST remain secret, and every changed binding MUST invalidate
+consumption.
+
 ## 6. Workflows
 
 ### 6.1 Investigation workflow
@@ -349,8 +385,9 @@ Requirements:
 5. Production writes transition to awaiting approval.
 6. The commander approves or rejects the exact action.
 7. The gateway revalidates verification, policy, approval, and idempotency.
-8. The tool executes.
-9. The agent verifies the outcome.
+8. The gateway issues and atomically consumes a task-scoped capability lease.
+9. The tool executes and the gateway closes the lease lifecycle.
+10. The agent verifies the outcome.
 
 Requirements:
 
@@ -360,6 +397,9 @@ Requirements:
 - `WF-013`: Approval MUST be revalidated at execution time.
 - `WF-014`: The system MUST verify remediation outcome.
 - `WF-015`: A failed write MUST return a clear terminal or compensating state.
+- `WF-016`: Execution MUST require an active lease whose complete binding
+  matches the trusted action.
+- `WF-017`: A lease MUST be single-use, short-lived, revocable, and audited.
 
 ### 6.3 Prompt-injection workflow
 
@@ -741,6 +781,9 @@ These are demo engineering targets, not public service-level commitments.
 - `AC-016`: A failed or missing Copilot hook produces no tool side effect.
 - `AC-017`: Built-in shell, filesystem, and unrestricted URL operations are unavailable.
 - `AC-018`: Hook and gateway action digests match for every executed action.
+- `AC-019`: A production write receives one exact, short-lived capability
+  lease; changed bindings, expiry, replay, revocation, or containment prevent
+  lease-backed execution.
 
 ### Verification
 

@@ -48,7 +48,15 @@ public sealed class GovernedGatewayTests
         Assert.Equal(
             ServiceHealth.Healthy,
             harness.Simulator.GetServiceHealth(IncidentSimulator.DemoServiceId).Health);
-        Assert.Equal(2, harness.Audit.ReadAll().Count);
+        Assert.Equal(3, harness.Audit.ReadAll().Count);
+        Assert.Equal(
+            CapabilityLeaseState.Completed,
+            Assert.IsType<CapabilityLeaseArtifact>(result.CapabilityLease).State);
+        Assert.Equal(
+            [CapabilityLeaseState.Issued, CapabilityLeaseState.Consumed, CapabilityLeaseState.Completed],
+            harness.Audit.ReadAll()
+                .Select(record => record.CapabilityLeaseState)
+                .ToArray());
         Assert.True(harness.Audit.VerifyIntegrity());
     }
 
@@ -94,6 +102,32 @@ public sealed class GovernedGatewayTests
             ServiceHealth.Degraded,
             harness.Simulator.GetServiceHealth(IncidentSimulator.DemoServiceId).Health);
         Assert.Single(harness.Audit.ReadAll());
+        Assert.True(harness.Approvals.TryConsume(
+            approval.Nonce,
+            CreateConsumptionRequest(harness, Now),
+            out _));
+    }
+
+    [Fact]
+    public async Task ReadOnlyRecoveryDeniesWriteWithoutIssuingLease()
+    {
+        var harness = CreateHarness();
+        harness.Containment.Contain();
+        harness.Containment.BeginReadOnlyRecovery(new ReattestationArtifact(
+            new string('a', 64),
+            "agent-image:sha256:known-good",
+            "operator-1",
+            Now));
+        var approval = CreateApproval(harness.Plan, harness.Envelope.Action.ActionDigest);
+        harness.Approvals.Add(approval);
+
+        var error = await Assert.ThrowsAsync<GovernanceException>(async () =>
+            await harness.Gateway.ExecuteAsync(
+                CreateRequest(harness.Plan, harness.Envelope, approval.Nonce),
+                CancellationToken.None));
+
+        Assert.Equal("recovery_read_only", error.Code);
+        Assert.Empty(harness.Leases.ReadAll(Now));
         Assert.True(harness.Approvals.TryConsume(
             approval.Nonce,
             CreateConsumptionRequest(harness, Now),
@@ -294,6 +328,7 @@ public sealed class GovernedGatewayTests
                 plan.PlanId,
                 step.StepId,
                 step.Tool,
+                IntentClass.Remediate,
                 step.Capability,
                 step.Effect,
                 new ActionResource(step.Resource.Id, step.Resource.Environment),
@@ -305,6 +340,7 @@ public sealed class GovernedGatewayTests
                 new string('c', 64)));
         var simulator = new IncidentSimulator();
         var approvals = new InMemoryApprovalStore();
+        var leases = new InMemoryCapabilityLeaseStore();
         var containment = new InMemoryContainmentControl();
         var audit = new InMemoryAuditChain();
         var gateway = new GovernedToolGateway(
@@ -312,6 +348,7 @@ public sealed class GovernedGatewayTests
             canonicalizer,
             policyFactory?.Invoke(containment) ?? new DefaultDenyPolicyEvaluator(),
             approvals,
+            leases,
             new InMemoryExecutionBudgetStore(
                 new ExecutionBudgetLimits(maximumToolCalls, TimeSpan.FromMinutes(3))),
             containment,
@@ -323,6 +360,7 @@ public sealed class GovernedGatewayTests
             gateway,
             simulator,
             approvals,
+            leases,
             containment,
             audit,
             plan,
@@ -376,6 +414,7 @@ public sealed class GovernedGatewayTests
         GovernedToolGateway Gateway,
         IncidentSimulator Simulator,
         InMemoryApprovalStore Approvals,
+        InMemoryCapabilityLeaseStore Leases,
         InMemoryContainmentControl Containment,
         InMemoryAuditChain Audit,
         ActionPlan Plan,

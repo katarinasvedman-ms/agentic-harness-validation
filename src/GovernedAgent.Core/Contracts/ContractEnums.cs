@@ -7,6 +7,25 @@ public enum EffectKind
     Delete
 }
 
+public enum IntentClass
+{
+    Observe,
+    Diagnose,
+    Remediate,
+    Communicate,
+    ExportData,
+    ChangeAccess
+}
+
+public enum CapabilityLeaseState
+{
+    Issued,
+    Consumed,
+    Completed,
+    Revoked,
+    Expired
+}
+
 public enum TargetEnvironment
 {
     Development,
@@ -74,6 +93,7 @@ public enum ErrorCategory
     VerificationUnavailable,
     ApprovalRequired,
     ApprovalInvalid,
+    CapabilityLeaseInvalid,
     BudgetExceeded,
     KillSwitchActive,
     AuditUnavailable,

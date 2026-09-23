@@ -1,4 +1,5 @@
 using GovernedAgent.Core.Contracts;
+using GovernedAgent.Governance;
 
 namespace GovernedAgent.Console.Bff;
 
@@ -22,6 +23,8 @@ public static class ConsoleEndpoints
             ConsoleState state) => Read(() => state.GetPending(incidentId)));
         api.MapGet("/audit", (ConsoleState state) => Results.Ok(state.GetAudit()));
         api.MapGet("/controls", (ConsoleState state) => Results.Ok(state.GetControls()));
+        api.MapGet("/capability-leases", (ConsoleState state) =>
+            Results.Ok(state.GetCapabilityLeases()));
 
         api.MapPost("/approvals/{requestId:guid}/approve", (
             Guid requestId,
@@ -35,6 +38,50 @@ public static class ConsoleEndpoints
             HttpContext context,
             ConsoleState state) => MutateApproval(
                 requestId, request, ApprovalDecision.Rejected, context, state));
+        api.MapPost("/incidents/{incidentId}/execute-approved", async (
+            string incidentId,
+            ExecutionMutation request,
+            HttpContext context,
+            ConsoleState state,
+            CancellationToken cancellationToken) =>
+        {
+            var denied = DemoIdentity.Require(
+                context.Request,
+                DemoIdentity.IncidentCommanderRole,
+                DemoIdentity.GovernanceOperatorRole);
+            if (denied is not null)
+            {
+                return denied;
+            }
+
+            try
+            {
+                return Results.Ok(await state.ExecuteApprovedAsync(
+                    incidentId,
+                    request,
+                    DemoIdentity.Current(context),
+                    cancellationToken));
+            }
+            catch (GovernanceException exception)
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Governed execution denied",
+                    detail: exception.Message,
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = exception.Code,
+                        ["category"] = exception.Category.ToString()
+                    });
+            }
+            catch (ArgumentException exception)
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Invalid execution request",
+                    detail: exception.Message);
+            }
+        });
         api.MapPut("/controls/containment", (
             ContainmentMutation request,
             HttpContext context,

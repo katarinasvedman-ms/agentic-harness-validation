@@ -2,8 +2,8 @@
 
 Reference implementation of a governed enterprise incident-response agent. The
 model investigates and proposes actions while deterministic policy, bounded
-formal verification, exact approval, and an independent gateway control every
-side effect.
+formal verification, exact approval, a single-use task-scoped capability
+lease, and an independent gateway control every side effect.
 
 ## Local development
 
@@ -57,4 +57,5 @@ weakening or bypassing the SDK protocol check.
 - [Verification Specification](docs/VERIFICATION_SPEC.md)
 - [Credential-free hosted-agent release](docs/RELEASE_DEPLOYMENT.md)
 - [ADR 0001: GitHub Copilot SDK inner loop](docs/adr/0001-copilot-sdk-inner-loop.md)
+- [ADR 0002: Intent-based capability leases](docs/adr/0002-intent-capability-leases.md)
 - [Standalone solution pitch](docs/pitch.html)

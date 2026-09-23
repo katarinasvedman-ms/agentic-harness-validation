@@ -87,6 +87,8 @@ function App() {
           <span aria-hidden="true">→</span>
           <span><b className="dot dot--accent" /> Exact approval</span>
           <span aria-hidden="true">→</span>
+          <span><b className="dot dot--accent" /> One-use lease</span>
+          <span aria-hidden="true">→</span>
           <span><b className="dot dot--success" /> Remediation complete</span>
           <span aria-hidden="true">·</span>
           <span><b className="dot dot--success" /> Recovery path evidenced</span>
@@ -149,6 +151,22 @@ function App() {
               </dl>
               <ul className="constraint-list">{demo.approval.constraints.map((item) => <li key={item}>{item}</li>)}</ul>
               <p className="approval-complete"><span aria-hidden="true">✓</span> Executed once at 10:00:15 UTC · health verified</p>
+            </section>
+
+            <section className="panel lease-card" aria-labelledby="lease-title">
+              <div className="panel__heading">
+                <div><p className="eyebrow">Intent-based access</p><h2 id="lease-title">Task-scoped capability lease</h2></div>
+                <StatusPill value={demo.capabilityLease.state} />
+              </div>
+              <dl className="lease-details">
+                <div><dt>Intent source</dt><dd>{demo.capabilityLease.intentSource}</dd></div>
+                <div><dt>Prompt assessment</dt><dd>{demo.capabilityLease.promptRole}</dd></div>
+                <div><dt>Intent class</dt><dd><code>{demo.capabilityLease.intent}</code></dd></div>
+                <div><dt>Exact scope</dt><dd><code>{demo.capabilityLease.scope}</code></dd></div>
+                <div><dt>Lifetime</dt><dd>{demo.capabilityLease.issuedAt}<small>Expires {demo.capabilityLease.expiresAt}</small></dd></div>
+                <div><dt>Use limit</dt><dd>{demo.capabilityLease.consumedUses} / {demo.capabilityLease.maximumUses} consumed</dd></div>
+              </dl>
+              <p className="lease-note">Application-layer authorization artifact only. It is not an Entra token, Azure RBAC assignment, or downstream credential.</p>
             </section>
 
             <section className="panel" aria-labelledby="policy-title">

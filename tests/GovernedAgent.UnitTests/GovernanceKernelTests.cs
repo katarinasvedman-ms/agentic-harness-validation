@@ -191,6 +191,239 @@ public sealed class GovernanceKernelTests
     }
 
     [Fact]
+    public void CapabilityLeaseIsExactSingleUseAndCompletable()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var store = new InMemoryCapabilityLeaseStore();
+        var lease = store.Issue(new CapabilityLeaseIssueRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(90),
+            MaximumUses: 1));
+        var request = new CapabilityLeaseConsumptionRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now.AddSeconds(1));
+
+        Assert.Equal(CapabilityLeaseState.Issued, lease.State);
+        Assert.Equal(IntentClass.Remediate, lease.Intent);
+        Assert.True(store.TryConsume(lease.Nonce, request, out var consumed));
+        Assert.Equal(CapabilityLeaseState.Consumed, consumed?.State);
+        Assert.False(store.TryConsume(lease.Nonce, request, out _));
+        Assert.True(store.TryComplete(
+            lease.LeaseId,
+            Now.AddSeconds(2),
+            out var completed));
+        Assert.Equal(CapabilityLeaseState.Completed, completed?.State);
+    }
+
+    [Fact]
+    public void ExpiredCapabilityLeaseCannotBeConsumed()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var store = new InMemoryCapabilityLeaseStore();
+        var lease = store.Issue(new CapabilityLeaseIssueRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(30),
+            MaximumUses: 1));
+
+        Assert.False(store.TryConsume(
+            lease.Nonce,
+            new CapabilityLeaseConsumptionRequest(
+                context.Envelope,
+                context.Tool,
+                "1.0",
+                Now.AddSeconds(30)),
+            out _));
+        Assert.Equal(
+            CapabilityLeaseState.Expired,
+            Assert.Single(store.ReadAll(Now.AddSeconds(30))).State);
+    }
+
+    [Fact]
+    public void CapabilityLeaseRejectsChangedResourceBinding()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var store = new InMemoryCapabilityLeaseStore();
+        var lease = store.Issue(new CapabilityLeaseIssueRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(90),
+            MaximumUses: 1));
+        var mutatedEnvelope = context.Envelope with
+        {
+            Action = context.Envelope.Action with
+            {
+                Resource = new ActionResource(
+                    "different-service",
+                    TargetEnvironment.Production)
+            }
+        };
+
+        Assert.False(store.TryConsume(
+            lease.Nonce,
+            new CapabilityLeaseConsumptionRequest(
+                mutatedEnvelope,
+                context.Tool,
+                "1.0",
+                Now.AddSeconds(1)),
+            out _));
+    }
+
+    [Fact]
+    public async Task ConcurrentCapabilityLeaseConsumptionHasOneWinner()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var store = new InMemoryCapabilityLeaseStore();
+        var lease = store.Issue(new CapabilityLeaseIssueRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(90),
+            MaximumUses: 1));
+        var request = new CapabilityLeaseConsumptionRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now.AddSeconds(1));
+
+        var attempts = await Task.WhenAll(
+            Enumerable.Range(0, 20)
+                .Select(index => Task.Run(() =>
+                    store.TryConsume(lease.Nonce, request, out _))));
+
+        Assert.Equal(1, attempts.Count(consumed => consumed));
+    }
+
+    [Fact]
+    public void CapabilityLeaseRejectsChangedTrustedBindings()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var store = new InMemoryCapabilityLeaseStore();
+        var lease = store.Issue(new CapabilityLeaseIssueRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(90),
+            MaximumUses: 1));
+        var changedSession = context.Envelope with
+        {
+            Session = context.Envelope.Session with { Id = "different-session" }
+        };
+        var changedIntent = context.Envelope with
+        {
+            Action = context.Envelope.Action with { Intent = IntentClass.Communicate }
+        };
+
+        Assert.False(store.TryConsume(
+            lease.Nonce,
+            new CapabilityLeaseConsumptionRequest(
+                changedSession,
+                context.Tool,
+                "1.0",
+                Now.AddSeconds(1)),
+            out _));
+        Assert.False(store.TryConsume(
+            lease.Nonce,
+            new CapabilityLeaseConsumptionRequest(
+                changedIntent,
+                context.Tool,
+                "1.0",
+                Now.AddSeconds(1)),
+            out _));
+        Assert.False(store.TryConsume(
+            lease.Nonce,
+            new CapabilityLeaseConsumptionRequest(
+                context.Envelope,
+                context.Tool,
+                "2.0",
+                Now.AddSeconds(1)),
+            out _));
+    }
+
+    [Fact]
+    public void AgentRevocationCoversIssuedAndConsumedLeases()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var store = new InMemoryCapabilityLeaseStore();
+        var issued = store.Issue(new CapabilityLeaseIssueRequest(
+            context.Envelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(90),
+            MaximumUses: 1));
+        var secondEnvelope = context.Envelope with
+        {
+            RequestId = Guid.NewGuid(),
+            Session = context.Envelope.Session with { Id = "session-2" }
+        };
+        var consumed = store.Issue(new CapabilityLeaseIssueRequest(
+            secondEnvelope,
+            context.Tool,
+            "1.0",
+            Now,
+            TimeSpan.FromSeconds(90),
+            MaximumUses: 1));
+        Assert.True(store.TryConsume(
+            consumed.Nonce,
+            new CapabilityLeaseConsumptionRequest(
+                secondEnvelope,
+                context.Tool,
+                "1.0",
+                Now.AddSeconds(1)),
+            out _));
+
+        var revoked = store.RevokeAgent(
+            context.Envelope.Agent.Id,
+            "Contain the agent.");
+
+        Assert.Equal(2, revoked.Count);
+        Assert.All(revoked, lease =>
+        {
+            Assert.Equal(CapabilityLeaseState.Revoked, lease.State);
+            Assert.Equal("Contain the agent.", lease.RevocationReason);
+        });
+        Assert.Contains(revoked, lease => lease.LeaseId == issued.LeaseId);
+        Assert.Contains(revoked, lease => lease.LeaseId == consumed.LeaseId);
+    }
+
+    [Fact]
+    public void UnverifiedPlanCannotIssueCapabilityLease()
+    {
+        var context = CreatePolicyContext(hasApproval: true);
+        var envelope = context.Envelope with
+        {
+            Verification = context.Envelope.Verification with
+            {
+                Result = VerificationResult.Rejected
+            }
+        };
+        var store = new InMemoryCapabilityLeaseStore();
+
+        var error = Assert.Throws<GovernanceException>(() =>
+            store.Issue(new CapabilityLeaseIssueRequest(
+                envelope,
+                context.Tool,
+                "1.0",
+                Now,
+                TimeSpan.FromSeconds(90),
+                MaximumUses: 1)));
+
+        Assert.Equal("lease_plan_not_verified", error.Code);
+    }
+
+    [Fact]
     public void BudgetFailsClosedAfterConfiguredToolCalls()
     {
         var store = new InMemoryExecutionBudgetStore(
@@ -299,6 +532,7 @@ public sealed class GovernanceKernelTests
                 Guid.NewGuid(),
                 "step-1",
                 tool.Name,
+                tool.Intent,
                 tool.Capability,
                 tool.Effect,
                 new ActionResource("payments-api", TargetEnvironment.Production),

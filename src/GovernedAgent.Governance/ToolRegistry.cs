@@ -31,22 +31,35 @@ public sealed class ToolRegistry : IToolRegistry
 
     private static ToolMetadata[] CreateDefaultRegistrations() =>
     [
-        ReadTool("get_incident", "incident.read"),
-        ReadTool("query_metrics", "telemetry.metrics.read"),
-        ReadTool("query_logs", "telemetry.logs.read"),
-        ReadTool("get_service_health", "service.health.read"),
-        WriteTool("update_incident", "incident.update", ApprovalClass.PolicyDependent),
-        WriteTool("restart_service", "service.restart", ApprovalClass.IncidentCommander),
+        ReadTool("get_incident", "incident.read", IntentClass.Observe),
+        ReadTool("query_metrics", "telemetry.metrics.read", IntentClass.Diagnose),
+        ReadTool("query_logs", "telemetry.logs.read", IntentClass.Diagnose),
+        ReadTool("get_service_health", "service.health.read", IntentClass.Observe),
+        WriteTool(
+            "update_incident",
+            "incident.update",
+            IntentClass.Communicate,
+            ApprovalClass.PolicyDependent),
+        WriteTool(
+            "restart_service",
+            "service.restart",
+            IntentClass.Remediate,
+            ApprovalClass.IncidentCommander),
         WriteTool(
             "restore_service_state",
             "service.restore",
+            IntentClass.Remediate,
             ApprovalClass.IncidentCommander)
     ];
 
-    private static ToolMetadata ReadTool(string name, string capability) =>
+    private static ToolMetadata ReadTool(
+        string name,
+        string capability,
+        IntentClass intent) =>
         Tool(
             name,
             capability,
+            intent,
             EffectKind.Read,
             ApprovalClass.None,
             DataClassification.Confidential);
@@ -54,10 +67,12 @@ public sealed class ToolRegistry : IToolRegistry
     private static ToolMetadata WriteTool(
         string name,
         string capability,
+        IntentClass intent,
         ApprovalClass approvalClass) =>
         Tool(
             name,
             capability,
+            intent,
             EffectKind.Write,
             approvalClass,
             DataClassification.Internal);
@@ -65,12 +80,14 @@ public sealed class ToolRegistry : IToolRegistry
     private static ToolMetadata Tool(
         string name,
         string capability,
+        IntentClass intent,
         EffectKind effect,
         ApprovalClass approvalClass,
         DataClassification maximumClassification) =>
         new(
             Name: name,
             Version: "1.0",
+            Intent: intent,
             Capability: capability,
             Effect: effect,
             Environments:

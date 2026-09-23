@@ -1,3 +1,4 @@
+using System.Text.Json;
 using GovernedAgent.Core.Contracts;
 using GovernedAgent.Governance;
 using GovernedAgent.Simulator;
@@ -48,6 +49,40 @@ public sealed record ApprovalMutationResult(
     string ActorId,
     DateTimeOffset DecidedAt,
     string? ApprovalNonce);
+
+public sealed record ExecutionMutation(string ApprovalNonce);
+
+public sealed record CapabilityLeaseView(
+    Guid LeaseId,
+    string AgentId,
+    string SessionId,
+    Guid PlanId,
+    string StepId,
+    string ActionDigest,
+    IntentClass Intent,
+    string Capability,
+    string Tool,
+    EffectKind Effect,
+    string ResourceId,
+    TargetEnvironment Environment,
+    DateTimeOffset IssuedAt,
+    DateTimeOffset ExpiresAt,
+    int MaximumUses,
+    int ConsumedUses,
+    CapabilityLeaseState State,
+    string? RevocationReason);
+
+public sealed record CapabilityLeasesView(
+    string IntentSource,
+    string PromptAssessmentRole,
+    IReadOnlyList<CapabilityLeaseView> Leases);
+
+public sealed record GovernedExecutionView(
+    GatewayOutcome Outcome,
+    GovernanceDecision Decision,
+    string ActionDigest,
+    JsonElement? ToolResult,
+    CapabilityLeaseView CapabilityLease);
 
 public sealed record ContainmentMutation(bool Active, string Reason);
 

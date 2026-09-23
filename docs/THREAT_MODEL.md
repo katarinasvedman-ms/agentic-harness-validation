@@ -109,6 +109,7 @@ Out of scope for the MVP:
 | Plan gate to policy engine | Verification result and digest | Integrity, version, fail-closed semantics |
 | Policy engine to tool gateway | Decision | Matched action digest, freshness, policy version |
 | Approval service to gateway | Approval artifact | Signature/integrity, exact digest, role, expiry, nonce |
+| Capability-lease broker to gateway | Task-scoped lease | Exact identity, plan, intent, action, resource, policy, verifier, lifetime, and use-count binding |
 | Hosted Agent to Azure services | Tool requests | Entra identity, RBAC, network restrictions |
 | Application to telemetry | Traces and audit | Redaction, integrity, retention |
 | CI to deployment | Image, policy, proofs, evals | Provenance, signing, release gates |
@@ -587,6 +588,23 @@ Risk uses qualitative likelihood and impact:
 
 **Residual risk:** Architecture decision remains open until the gate is run.
 
+### TM-33: Capability lease replay or confused-deputy use
+
+**Scenario:** A lease is replayed, used by a different agent or session, or
+presented for a different intent, tool, target, policy, or verifier version.
+
+**Controls:**
+
+- Cryptographically random nonce kept out of operator-facing read models.
+- Exact binding to identity, plan, action digest, trusted intent, tool,
+  capability, effect, target, environment, policy, and verifier.
+- Atomic single-use consumption and bounded expiry.
+- Revocation during containment.
+- Gateway-only issuance and consumption.
+
+**Residual risk:** The local broker is in-memory and does not model distributed
+clock, storage, or token-exchange failure modes.
+
 ## 8. Control mapping
 
 | Threat | Plan verification | AGT policy | Approval | Identity/RBAC | Tool gateway | Telemetry/eval | Operational control |
@@ -640,6 +658,8 @@ The MVP MUST include automated tests for:
 - No high-impact action can execute on model authorization alone.
 - No direct application path to a write tool bypasses the gateway.
 - Every production write requires verified plan, allow policy, exact approval, and RBAC permission.
+- Every demonstrated production write also requires an exact active
+  capability lease immediately before handler dispatch.
 - Every adversarial MVP scenario produces no unauthorized external side effect.
 - Every denial produces a correlated decision record.
 - Loss of verifier, policy, approval, or required audit persistence fails closed.
@@ -684,6 +704,7 @@ control has been exercised.
 | `TM-28` Session leakage | Independent pending-execution and trusted-user resume-token tests | Incident scope and restart cleanup procedure |
 | `TM-29` Loop exhaustion | Budget, cancellation, TTL, and capacity tests | Runbook limits and emergency stop |
 | `TM-30` False completion | `CompletionIsPendingWhenSimulatorGoalIsNotSatisfied`; completion evaluation case | Completion tied to simulator state, not prose |
+| `TM-33` Capability lease replay/confused deputy | `CapabilityLeaseIsExactSingleUseAndCompletable`; `ConcurrentCapabilityLeaseConsumptionHasOneWinner`; changed-binding, expiry, revocation, and unverified-plan tests; `ApprovedConsoleActionExecutesWithCompletedSingleUseLease` | Rehearsal captures one 90-second `Remediate` lease and replay/containment denial |
 | `TM-31` Duplicate orchestration | `FreshApprovalAndSameIdempotencyKeyReplaysWithoutDuplicateWrite`; digest assertions | Diagram assigns one inner-loop owner and one gateway |
 | `TM-32` Hosted incompatibility | `hosted-agent-smoke.ps1` and credential-free Docker smoke | Harness fallback; remote auth/deployment explicitly unproven |
 

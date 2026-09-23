@@ -53,7 +53,9 @@ The product is not intended to claim that a large language model or the complete
 2. Runtime governance deterministically allows, denies, or pauses actions.
 3. Formal verification establishes selected properties of bounded deterministic components.
 4. Identity and infrastructure permissions enforce least privilege.
-5. Observability and audit evidence explain what happened.
+5. Task-scoped capability leases authorize one exact verified action for a
+   short lifetime.
+6. Observability and audit evidence explain what happened.
 
 ## 4. Goals
 
@@ -495,6 +497,8 @@ The following decisions are established for the initial release:
 - Copilot built-in shell, filesystem, and unrestricted URL tools are excluded from the operational MVP.
 - Runtime actions are governed outside the model.
 - High-impact production actions require exact human approval.
+- Runtime authority is issued only from verified structured intent, is bound to
+  the exact action, expires quickly, and is single-use.
 - Formal verification applies only to selected deterministic components.
 - Experimental verification tooling supplements, but never replaces, policy enforcement, identity, and RBAC.
 - The initial demo favors one polished agent workflow over broad platform functionality.
@@ -522,7 +526,8 @@ The initial product is accepted when:
 2. The adversarial workflow is blocked before any unauthorized external action.
 3. A production remediation cannot execute without valid, exact approval.
 4. The agent identity cannot perform prohibited operations even if application controls are bypassed.
-5. Every action is traceable to the relevant user, agent, deployment, policy, approval, and incident.
+5. Every action is traceable to the relevant user, agent, deployment, policy,
+   approval, capability lease, and incident.
 6. Required evaluations and proofs gate deployment.
 7. The governance console accurately distinguishes model output, policy decisions, approvals, execution results, and formal guarantees.
 8. Containment prevents subsequent actions, and write access returns only
@@ -531,6 +536,9 @@ The initial product is accepted when:
 10. Customer-facing documentation clearly identifies preview and experimental components.
 11. Every Copilot tool request is intercepted before execution and revalidated at the gateway.
 12. The system distinguishes Copilot loop idleness from successful business completion.
+13. A verified, approved production write receives one short-lived,
+    action-bound capability lease; replay, changed bindings, expiry,
+    revocation, or containment prevents a new side effect.
 
 ## 21. Follow-on documents
 

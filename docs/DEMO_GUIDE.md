@@ -60,10 +60,10 @@ control evidence.
    approval. Say: “This demo verifies a bounded plan schema and binds one
    production write to its action digest, target, expiry, and approver role.
    This is not a proof of the model or a production certification.”
-4. **Show independent enforcement (45 seconds).** Point to Containment &
-   recovery. Say: “The governed gateway is the only application side-effect boundary. It
-   rechecks registry metadata, policy, budget, exact approval, idempotency, and
-   containment.”
+4. **Show intent-based access (45 seconds).** Point to Task-scoped capability
+   lease. Say: “The prompt is advisory. Trusted intent comes from the verified
+   plan and registry metadata. The gateway issues a 90-second, one-use lease
+   bound to this exact remediation, consumes it, and closes it after execution.”
 5. **Show staged recovery (45 seconds).** Say: “A governance operator
    re-attests the known-good artifact before read-only recovery. An incident
    commander must sign off the root cause before write authority returns.”
@@ -72,7 +72,8 @@ control evidence.
    Azure audit storage remains deployment work.”
 
 Expected UI evidence: injection marked as data, plan passed, exact single-use
-approval, remediation complete, gateway active, and audit chain verified.
+approval, completed task-scoped lease, remediation complete, gateway active,
+and audit chain verified.
 
 ## 12–15 minute technical path
 
@@ -91,12 +92,11 @@ Run `pwsh .\scripts\rehearse-local-demo.ps1` and narrate its checklist:
    by the shipped Node verifier in `ConsoleBffTests`. The real local workflow
    test asserts the
    production restart suspends with the simulator still degraded.
-4. **Exact approval (3 minutes).** The API rejects a wrong role, accepts the
-   exact incident-commander decision once, and rejects replay. Workflow tests
-   separately prove wrong digest denial, valid resume, one restart, and healthy
-   completion.
-5. **Containment (2 minutes).** The API activates application containment.
-   Gateway tests prove a new write is denied and no side effect occurs.
+4. **Exact approval and lease (3 minutes).** The API rejects a wrong role,
+   accepts the exact incident-commander decision once, issues and consumes a
+   90-second `Remediate` lease, completes one restart, and rejects replay.
+5. **Containment (2 minutes).** The API activates application containment and
+   denies a newly approved write before any new lease or side effect.
 6. **Recovery (2 minutes).** The governance operator records a known-good
    artifact digest and version to enter read-only recovery. The incident
    commander then records root-cause sign-off before operational access returns.
@@ -113,6 +113,7 @@ irm http://127.0.0.1:5072/health
 irm http://127.0.0.1:5072/api/incidents/INC-1042
 irm http://127.0.0.1:5072/api/incidents/INC-1042/evidence
 irm http://127.0.0.1:5072/api/incidents/INC-1042/plan-verification
+irm http://127.0.0.1:5072/api/capability-leases
 irm http://127.0.0.1:5072/api/audit
 ```
 
@@ -121,8 +122,9 @@ irm http://127.0.0.1:5072/api/audit
 Safe claims: the repository contains deterministic local enforcement and tests;
 the simulator write is gateway-controlled; exact approvals are digest-bound and
 single-use; the bounded verifier and published assumptions have executable
-evidence; containment and ordered recovery have executable local evidence; the
-local audit chain detects mutation.
+evidence; task-scoped leases are exact, short-lived, single-use, and
+credential-free; containment and ordered recovery have executable local
+evidence; the local audit chain detects mutation.
 
 Do not claim that the whole agent is formally verified, that prompt injection
 is eliminated, that Azure RBAC/egress/durable audit is configured, or that

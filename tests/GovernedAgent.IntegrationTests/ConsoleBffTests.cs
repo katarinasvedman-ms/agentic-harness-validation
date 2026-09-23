@@ -5,6 +5,7 @@ using GovernedAgent.Host.Verification;
 using GovernedAgent.Simulator;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using System.Text.Json;
 
 namespace GovernedAgent.IntegrationTests;
 
@@ -142,6 +143,53 @@ public sealed class ConsoleBffTests
     }
 
     [Fact]
+    public async Task ApprovedConsoleActionExecutesWithCompletedSingleUseLease()
+    {
+        var state = CreateState();
+        var pending = Assert.IsType<PendingApprovalView>(
+            state.GetPending(IncidentSimulator.DemoIncidentId));
+        var identity = new DemoIdentity(
+            "commander@example.test",
+            new HashSet<string>(
+                [DemoIdentity.IncidentCommanderRole],
+                StringComparer.Ordinal));
+        var approval = state.Decide(
+            pending.ApprovalRequestId,
+            ApprovalDecision.Approved,
+            identity,
+            "Mitigate the verified degraded instance.");
+
+        var result = await state.ExecuteApprovedAsync(
+            IncidentSimulator.DemoIncidentId,
+            new ExecutionMutation(Assert.IsType<string>(approval.ApprovalNonce)),
+            identity,
+            CancellationToken.None);
+
+        Assert.Equal(GatewayOutcome.Executed, result.Outcome);
+        Assert.DoesNotContain(
+            "nonce",
+            JsonSerializer.Serialize(result),
+            StringComparison.OrdinalIgnoreCase);
+        var lease = Assert.Single(state.GetCapabilityLeases().Leases);
+        Assert.Equal(IntentClass.Remediate, lease.Intent);
+        Assert.Equal(CapabilityLeaseState.Completed, lease.State);
+        Assert.Equal(1, lease.MaximumUses);
+        Assert.Equal(1, lease.ConsumedUses);
+        Assert.Equal(TimeSpan.FromSeconds(90), lease.ExpiresAt - lease.IssuedAt);
+        Assert.Equal(
+            ServiceHealth.Healthy,
+            state.GetIncident(IncidentSimulator.DemoIncidentId).ServiceHealth.Health);
+
+        var replay = await Assert.ThrowsAsync<GovernanceException>(async () =>
+            await state.ExecuteApprovedAsync(
+                IncidentSimulator.DemoIncidentId,
+                new ExecutionMutation(approval.ApprovalNonce!),
+                identity,
+                CancellationToken.None));
+        Assert.Equal("approval_invalid", replay.Code);
+    }
+
+    [Fact]
     public void ContainmentRecoveryRequiresOrderedEvidenceAndClosesAudit()
     {
         var state = CreateState();
@@ -258,16 +306,37 @@ public sealed class ConsoleBffTests
         var time = new FixedTimeProvider(
             new DateTimeOffset(2026, 8, 12, 12, 47, 32, TimeSpan.Zero));
         var registry = new ToolRegistry();
+        var simulator = new IncidentSimulator(time);
+        var canonicalizer = new ActionCanonicalizer(registry);
+        var approvalStore = approvals ?? new InMemoryApprovalStore();
+        var auditChain = audit ?? new InMemoryAuditChain();
+        var containmentControl = containment ?? new InMemoryContainmentControl();
+        var capabilityLeases = new InMemoryCapabilityLeaseStore();
+        var limits = ExecutionBudgetLimits.LocalDefault;
+        var gateway = new GovernedToolGateway(
+            registry,
+            canonicalizer,
+            new DefaultDenyPolicyEvaluator(time),
+            approvalStore,
+            capabilityLeases,
+            new InMemoryExecutionBudgetStore(limits),
+            containmentControl,
+            auditChain,
+            new SimulatorGovernedToolExecutor(simulator),
+            time);
         return new ConsoleState(
-            new IncidentSimulator(time),
+            simulator,
             new DemoWorkflowSnapshotProvider(
                 time,
                 registry,
-                new ActionCanonicalizer(registry)),
-            approvals ?? new InMemoryApprovalStore(),
-            audit ?? new InMemoryAuditChain(),
-            containment ?? new InMemoryContainmentControl(),
-            ExecutionBudgetLimits.LocalDefault,
+                canonicalizer),
+            approvalStore,
+            auditChain,
+            capabilityLeases,
+            containmentControl,
+            registry,
+            gateway,
+            limits,
             time);
     }
 

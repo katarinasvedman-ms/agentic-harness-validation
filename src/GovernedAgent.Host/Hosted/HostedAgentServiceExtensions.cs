@@ -93,6 +93,7 @@ public static class HostedAgentServiceExtensions
         });
         services.AddSingleton<IExecutionBudgetStore>(
             new InMemoryExecutionBudgetStore(ExecutionBudgetLimits.LocalDefault));
+        services.AddSingleton<ICapabilityLeaseStore, InMemoryCapabilityLeaseStore>();
         services.AddSingleton<IContainmentControl, InMemoryContainmentControl>();
         services.AddSingleton<IAuditChain, InMemoryAuditChain>();
         services.AddSingleton<GovernedToolGateway>();

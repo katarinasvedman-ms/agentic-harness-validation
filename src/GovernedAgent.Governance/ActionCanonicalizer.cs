@@ -5,11 +5,9 @@ namespace GovernedAgent.Governance;
 
 public sealed class ActionCanonicalizer(IToolRegistry toolRegistry)
 {
-    public ActionDigestResult CreateDigest(ActionPlan plan, PlanStep step)
+    public ToolMetadata GetTrustedTool(PlanStep step)
     {
-        ArgumentNullException.ThrowIfNull(plan);
         ArgumentNullException.ThrowIfNull(step);
-
         if (!toolRegistry.TryGet(step.Tool, out var trustedTool))
         {
             throw new GovernanceException(
@@ -17,6 +15,16 @@ public sealed class ActionCanonicalizer(IToolRegistry toolRegistry)
                 "unknown_tool",
                 $"Tool '{step.Tool}' is not registered.");
         }
+
+        return trustedTool;
+    }
+
+    public ActionDigestResult CreateDigest(ActionPlan plan, PlanStep step)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        ArgumentNullException.ThrowIfNull(step);
+
+        var trustedTool = GetTrustedTool(step);
 
         if (!string.Equals(
                 trustedTool.Capability,
@@ -45,6 +53,7 @@ public sealed class ActionCanonicalizer(IToolRegistry toolRegistry)
             StepId: step.StepId,
             Tool: trustedTool.Name,
             ToolVersion: trustedTool.Version,
+            Intent: trustedTool.Intent,
             Capability: trustedTool.Capability,
             Effect: trustedTool.Effect,
             Resource: step.Resource,

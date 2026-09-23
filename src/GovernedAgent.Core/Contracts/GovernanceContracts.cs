@@ -23,6 +23,7 @@ public sealed record GovernedAction(
     [property: JsonPropertyName("planId")] Guid PlanId,
     [property: JsonPropertyName("stepId")] string StepId,
     [property: JsonPropertyName("tool")] string Tool,
+    [property: JsonPropertyName("intent")] IntentClass Intent,
     [property: JsonPropertyName("capability")] string Capability,
     [property: JsonPropertyName("effect")] EffectKind Effect,
     [property: JsonPropertyName("resource")] ActionResource Resource,
@@ -69,6 +70,7 @@ public sealed record PolicyDecision(
 public sealed record ToolMetadata(
     [property: JsonPropertyName("name")] string Name,
     [property: JsonPropertyName("version")] string Version,
+    [property: JsonPropertyName("intent")] IntentClass Intent,
     [property: JsonPropertyName("capability")] string Capability,
     [property: JsonPropertyName("effect")] EffectKind Effect,
     [property: JsonPropertyName("environments")] IReadOnlyList<TargetEnvironment> Environments,
@@ -91,7 +93,9 @@ public sealed record AuditRecord(
     [property: JsonPropertyName("executionState")] ExecutionState ExecutionState,
     [property: JsonPropertyName("timestamp")] DateTimeOffset Timestamp,
     [property: JsonPropertyName("previousRecordHash")] string? PreviousRecordHash,
-    [property: JsonPropertyName("recordHash")] string RecordHash);
+    [property: JsonPropertyName("recordHash")] string RecordHash,
+    [property: JsonPropertyName("capabilityLeaseId")] Guid? CapabilityLeaseId = null,
+    [property: JsonPropertyName("capabilityLeaseState")] CapabilityLeaseState? CapabilityLeaseState = null);
 
 public sealed record GovernedError(
     [property: JsonPropertyName("category")] ErrorCategory Category,

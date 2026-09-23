@@ -1139,10 +1139,11 @@
 <div class="map-node"><span class="map-label">Reason</span><strong>Agent runtime</strong><p>Model, prompt, memory, retrieval, planning, and tool selection.</p></div>
 <div class="map-node"><span class="map-label">Check</span><strong>Policy and guardrails</strong><p>Agent ID, safety, DLP, data boundaries, jailbreak checks, and action policy.</p></div>
 <div class="map-node"><span class="map-label">Approve</span><strong>Human or automated gate</strong><p>Exact approval for high-impact actions, budgets, and exceptions.</p></div>
-<div class="map-node"><span class="map-label">Execute</span><strong>Enforcement point</strong><p>Revalidate Agent ID, scope, policy, approval, and audit before side effects.</p></div>
+<div class="map-node"><span class="map-label">Lease</span><strong>Task-scoped authority</strong><p>Mint short-lived, single-use authority from verified structured intent, never from prompt wording alone.</p></div>
+<div class="map-node"><span class="map-label">Execute</span><strong>Enforcement point</strong><p>Revalidate Agent ID, scope, policy, approval, lease, and audit before side effects.</p></div>
 </div>
 <div class="callout">
-            Runtime enforcement should be close to the side effect. If a tool can change a system, the enforcement point must re-check Agent ID, authorization, policy, approval, and blast radius even if the agent already checked earlier.
+            Runtime enforcement should be close to the side effect. If a tool can change a system, the enforcement point must re-check Agent ID, authorization, policy, approval, the exact task-scoped lease, and blast radius even if the agent already checked earlier. In the local proof point, the lease is an application authorization artifact, not an Entra token or dynamic Azure RBAC grant.
           </div>
 </div>
 </div>

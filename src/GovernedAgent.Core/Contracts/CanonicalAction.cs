@@ -9,6 +9,7 @@ public sealed record CanonicalAction(
     [property: JsonPropertyName("stepId")] string StepId,
     [property: JsonPropertyName("tool")] string Tool,
     [property: JsonPropertyName("toolVersion")] string ToolVersion,
+    [property: JsonPropertyName("intent")] IntentClass Intent,
     [property: JsonPropertyName("capability")] string Capability,
     [property: JsonPropertyName("effect")] EffectKind Effect,
     [property: JsonPropertyName("resource")] ResourceReference Resource,

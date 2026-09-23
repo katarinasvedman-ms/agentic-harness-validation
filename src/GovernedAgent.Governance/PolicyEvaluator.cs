@@ -58,6 +58,7 @@ public sealed class DefaultDenyPolicyEvaluator(
         var action = context.Envelope.Action;
         var tool = context.Tool;
         if (!string.Equals(action.Tool, tool.Name, StringComparison.Ordinal) ||
+            action.Intent != tool.Intent ||
             !string.Equals(action.Capability, tool.Capability, StringComparison.Ordinal) ||
             action.Effect != tool.Effect)
         {

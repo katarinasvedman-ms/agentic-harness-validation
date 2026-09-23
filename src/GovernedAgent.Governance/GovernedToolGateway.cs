@@ -21,7 +21,8 @@ public sealed record GatewayResult(
     GatewayOutcome Outcome,
     PolicyDecision PolicyDecision,
     JsonElement? ToolResult,
-    string ActionDigest);
+    string ActionDigest,
+    CapabilityLeaseArtifact? CapabilityLease = null);
 
 public interface IGovernedToolExecutor
 {
@@ -39,6 +40,7 @@ public sealed class GovernedToolGateway(
     ActionCanonicalizer canonicalizer,
     IPolicyEvaluator policyEvaluator,
     IApprovalStore approvalStore,
+    ICapabilityLeaseStore capabilityLeases,
     IExecutionBudgetStore budgetStore,
     IContainmentControl containmentControl,
     IAuditChain auditChain,
@@ -61,12 +63,6 @@ public sealed class GovernedToolGateway(
         {
             var step = ResolveStep(request.Plan, request.StepId);
             ValidatePlan(request.Plan, now);
-            var digest = canonicalizer.CreateDigest(request.Plan, step);
-            actionDigest = digest.Value;
-            ValidateEnvelope(request, step, digest.Value);
-            ValidateExecutionMetadata(request, step);
-            executor.Validate(step, request.ExpectedResourceVersion);
-
             if (!toolRegistry.TryGet(step.Tool, out var tool))
             {
                 throw Error(
@@ -74,6 +70,12 @@ public sealed class GovernedToolGateway(
                     "unknown_tool",
                     $"Tool '{step.Tool}' is not registered.");
             }
+
+            var digest = canonicalizer.CreateDigest(request.Plan, step);
+            actionDigest = digest.Value;
+            ValidateEnvelope(request, step, tool, digest.Value);
+            ValidateExecutionMetadata(request, step);
+            executor.Validate(step, request.ExpectedResourceVersion);
 
             var approvalRequired = RequiresApproval(step);
             var approvalRequest = CreateApprovalRequest(request, step, digest.Value, now);
@@ -215,29 +217,95 @@ public sealed class GovernedToolGateway(
                     "The exact approval changed before it could be consumed.");
             }
 
-            AppendAudit(
-                request,
-                digest.Value,
-                policy,
-                ExecutionState.Executing,
-                now);
-            var result = await executor.ExecuteAsync(
-                step,
-                request.IdempotencyKey,
-                request.ExpectedResourceVersion,
-                cancellationToken);
-            AppendAudit(
-                request,
-                digest.Value,
-                policy,
-                ExecutionState.Completed,
-                _timeProvider.GetUtcNow());
+            CapabilityLeaseArtifact? lease = null;
+            try
+            {
+                lease = capabilityLeases.Issue(new CapabilityLeaseIssueRequest(
+                    request.Envelope,
+                    tool,
+                    policy.PolicyVersion,
+                    _timeProvider.GetUtcNow(),
+                    LeaseLifetime(step.Effect),
+                    MaximumUses: 1));
+                AppendLeaseAudit(
+                    request,
+                    digest.Value,
+                    policy,
+                    ExecutionState.Approved,
+                    lease);
 
-            return new GatewayResult(
-                GatewayOutcome.Executed,
-                policy,
-                result,
-                digest.Value);
+                if (!capabilityLeases.TryConsume(
+                        lease.Nonce,
+                        new CapabilityLeaseConsumptionRequest(
+                            request.Envelope,
+                            tool,
+                            policy.PolicyVersion,
+                            _timeProvider.GetUtcNow()),
+                        out var consumedLease))
+                {
+                    throw Error(
+                        ErrorCategory.CapabilityLeaseInvalid,
+                        "capability_lease_invalid",
+                        "The exact capability lease is invalid, expired, revoked, or consumed.");
+                }
+
+                lease = consumedLease;
+                AppendLeaseAudit(
+                    request,
+                    digest.Value,
+                    policy,
+                    ExecutionState.Executing,
+                    lease!);
+                var result = await executor.ExecuteAsync(
+                    step,
+                    request.IdempotencyKey,
+                    request.ExpectedResourceVersion,
+                    cancellationToken);
+
+                if (!capabilityLeases.TryComplete(
+                        lease!.LeaseId,
+                        _timeProvider.GetUtcNow(),
+                        out var completedLease))
+                {
+                    throw Error(
+                        ErrorCategory.CapabilityLeaseInvalid,
+                        "capability_lease_completion_failed",
+                        "The consumed capability lease could not be completed.");
+                }
+
+                lease = completedLease;
+                AppendLeaseAudit(
+                    request,
+                    digest.Value,
+                    policy,
+                    ExecutionState.Completed,
+                    lease!);
+
+                return new GatewayResult(
+                    GatewayOutcome.Executed,
+                    policy,
+                    result,
+                    digest.Value,
+                    lease);
+            }
+            catch
+            {
+                if (lease is not null &&
+                    capabilityLeases.Revoke(
+                        lease.LeaseId,
+                        "Execution did not complete.",
+                        out var revokedLease))
+                {
+                    AppendLeaseAudit(
+                        request,
+                        digest.Value,
+                        policy,
+                        ExecutionState.Failed,
+                        revokedLease!);
+                }
+
+                throw;
+            }
         }
         catch (GovernanceException exception)
         {
@@ -279,6 +347,11 @@ public sealed class GovernedToolGateway(
     private static bool RequiresApproval(PlanStep step) =>
         step.Resource.Environment == TargetEnvironment.Production &&
         step.Effect == EffectKind.Write;
+
+    private static TimeSpan LeaseLifetime(EffectKind effect) =>
+        effect == EffectKind.Read
+            ? TimeSpan.FromSeconds(30)
+            : TimeSpan.FromSeconds(90);
 
     private PolicyDecision CreateContainmentDenial(ContainmentMode mode) =>
         new(
@@ -344,6 +417,7 @@ public sealed class GovernedToolGateway(
     private static void ValidateEnvelope(
         GovernedToolRequest request,
         PlanStep step,
+        ToolMetadata tool,
         string digest)
     {
         var action = request.Envelope.Action;
@@ -351,6 +425,7 @@ public sealed class GovernedToolGateway(
             action.PlanId != request.Plan.PlanId ||
             !string.Equals(action.StepId, step.StepId, StringComparison.Ordinal) ||
             !string.Equals(action.Tool, step.Tool, StringComparison.Ordinal) ||
+            action.Intent != tool.Intent ||
             !string.Equals(action.Capability, step.Capability, StringComparison.Ordinal) ||
             action.Effect != step.Effect ||
             !string.Equals(action.Resource.Id, step.Resource.Id, StringComparison.Ordinal) ||
@@ -395,7 +470,8 @@ public sealed class GovernedToolGateway(
         string actionDigest,
         PolicyDecision policy,
         ExecutionState executionState,
-        DateTimeOffset timestamp)
+        DateTimeOffset timestamp,
+        CapabilityLeaseArtifact? lease = null)
     {
         auditChain.Append(new AuditRecord(
             Guid.NewGuid(),
@@ -411,8 +487,24 @@ public sealed class GovernedToolGateway(
             executionState,
             timestamp,
             PreviousRecordHash: null,
-            RecordHash: string.Empty));
+            RecordHash: string.Empty,
+            lease?.LeaseId,
+            lease?.State));
     }
+
+    private void AppendLeaseAudit(
+        GovernedToolRequest request,
+        string actionDigest,
+        PolicyDecision policy,
+        ExecutionState executionState,
+        CapabilityLeaseArtifact lease) =>
+        AppendAudit(
+            request,
+            actionDigest,
+            policy,
+            executionState,
+            _timeProvider.GetUtcNow(),
+            lease);
 
     private static GovernanceException Error(
         ErrorCategory category,

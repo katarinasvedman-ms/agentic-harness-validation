@@ -142,6 +142,9 @@ Runtime policy evaluation
 Exact approval when required
         |
         v
+Task-scoped capability lease
+        |
+        v
 Governed gateway revalidation
         |
         v
@@ -168,6 +171,11 @@ The trusted demo tool registry contains:
 > canonical action digest and checks the registered tool, resource target,
 > verification result, policy, execution budget, exact approval, containment,
 > idempotency key, and expected resource version.
+
+> If those checks agree, the gateway derives intent from the verified plan and
+> trusted tool registry, issues a short-lived one-use capability lease, consumes
+> it atomically, and closes it after execution. The local lease is not an Entra
+> token or Azure RBAC assignment.
 
 > The gateway performs these checks independently. A mistaken or bypassed
 > pre-tool decision therefore cannot directly cause an operational side effect.
@@ -207,18 +215,24 @@ Narrate each result:
    > The valid approval is bound to this action digest and target. A replay is
    > rejected.
 
-6. **Containment stops new writes.**
+6. **The exact action receives temporary authority.**
+
+   > The approved remediation receives a 90-second, one-use `Remediate` lease
+   > bound to the agent, session, plan, action digest, target, and policy. The
+   > prompt itself cannot grant this authority.
+
+7. **Containment stops new writes.**
 
    > Application containment is checked at the gateway, so a new side effect
    > is denied.
 
-7. **Recovery is ordered and staged.**
+8. **Recovery is ordered and staged.**
 
    > A governance operator re-attests the known-good version and digest before
    > the control enters read-only recovery. Write authority returns only after
    > an incident commander records root-cause sign-off.
 
-8. **The audit chain verifies.**
+9. **The audit chain verifies.**
 
    > The local hash-linked audit record detects mutation and correlates the
    > decision with the verified action, containment, re-attestation, and
@@ -237,6 +251,7 @@ Point out:
 - `containsUntrustedContent`
 - the pending approval and required role
 - the accepted approval decision
+- the completed capability lease and its exact scope, intent, TTL, and use count
 - `containment.mode` changing to `Contained`
 - the re-attested known-good version and read-only recovery state
 - `restoredControls.mode` returning to `Operational`
@@ -248,7 +263,8 @@ Point out:
 
 > This first version demonstrates a governed autonomy pattern: the model
 > investigates and proposes, while deterministic verification, policy, human
-> approval, and the gateway authorize every side effect.
+> approval, task-scoped capability lease, and the gateway authorize every side
+> effect.
 
 > The next production step is to replace the simulator and demo identity
 > adapter with approved operational integrations, Entra identity, durable

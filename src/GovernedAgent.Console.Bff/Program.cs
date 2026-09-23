@@ -14,10 +14,17 @@ builder.Services.AddSingleton<TimeProvider>(TimeProvider.System);
 builder.Services.AddSingleton<IIncidentSimulator, IncidentSimulator>();
 builder.Services.AddSingleton<IAuditChain, InMemoryAuditChain>();
 builder.Services.AddSingleton<IApprovalStore, InMemoryApprovalStore>();
+builder.Services.AddSingleton<ICapabilityLeaseStore, InMemoryCapabilityLeaseStore>();
 builder.Services.AddSingleton<IContainmentControl, InMemoryContainmentControl>();
 builder.Services.AddSingleton<IToolRegistry>(_ => new ToolRegistry());
 builder.Services.AddSingleton<ActionCanonicalizer>();
 builder.Services.AddSingleton(ExecutionBudgetLimits.LocalDefault);
+builder.Services.AddSingleton<IExecutionBudgetStore>(provider =>
+    new InMemoryExecutionBudgetStore(
+        provider.GetRequiredService<ExecutionBudgetLimits>()));
+builder.Services.AddSingleton<IPolicyEvaluator, DefaultDenyPolicyEvaluator>();
+builder.Services.AddSingleton<IGovernedToolExecutor, SimulatorGovernedToolExecutor>();
+builder.Services.AddSingleton<GovernedToolGateway>();
 builder.Services.AddSingleton<IConsoleWorkflowSnapshotProvider, DemoWorkflowSnapshotProvider>();
 builder.Services.AddSingleton<ConsoleState>();
 

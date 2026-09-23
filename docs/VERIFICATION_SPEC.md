@@ -609,6 +609,11 @@ lemmafit MAY verify the governance console's pure transition logic:
 
 The implemented containment-recovery ordering is currently supported by
 executable state-machine and integration tests, not by the Dafny proof set.
+The same scope rule applies to capability leases. The current Dafny model
+proves bounded plan properties; exact lease binding, atomic single use,
+expiry, revocation, and containment interaction are supported by executable
+unit and gateway tests. This repository does not claim formal verification of
+a distributed identity or privilege system.
 The experiment MUST remain separate from runtime authorization unless it meets
 the same artifact binding, differential testing, CI, and fail-closed
 requirements as the primary plan gate.
@@ -627,6 +632,9 @@ requirements as the primary plan gate.
 - `VA-10`: Customer-facing language does not claim whole-agent formal verification.
 - `VA-11`: Hook and gateway canonicalization agree for the required action corpus.
 - `VA-12`: Denial at either enforcement point produces no external side effect.
+- `VA-13`: Executable tests show that only one exact, active capability lease
+  can cross the gateway boundary and that expiry, replay, changed bindings,
+  revocation, or containment deny a new execution transition.
 
 ## 20. Review requirements
 

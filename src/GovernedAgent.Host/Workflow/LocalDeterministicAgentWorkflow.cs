@@ -201,8 +201,10 @@ public sealed class LocalDeterministicAgentWorkflow(
         AgentWorkflowRequest request,
         PlanStep step,
         string actionDigest,
-        PlanVerificationDecision decision) =>
-        new(
+        PlanVerificationDecision decision)
+    {
+        var trustedTool = canonicalizer.GetTrustedTool(step);
+        return new(
             "1.0",
             Guid.NewGuid(),
             _timeProvider.GetUtcNow(),
@@ -213,6 +215,7 @@ public sealed class LocalDeterministicAgentWorkflow(
                 request.Plan.PlanId,
                 step.StepId,
                 step.Tool,
+                trustedTool.Intent,
                 step.Capability,
                 step.Effect,
                 new ActionResource(step.Resource.Id, step.Resource.Environment),
@@ -222,6 +225,7 @@ public sealed class LocalDeterministicAgentWorkflow(
                 decision.SpecificationVersion,
                 decision.VerifierVersion,
                 decision.PlanDigest));
+    }
 
     private static void ValidateIdentityBinding(AgentWorkflowRequest request)
     {

@@ -333,6 +333,7 @@ public sealed class AgentWorkflowTests
             canonicalizer,
             new DefaultDenyPolicyEvaluator(),
             approvals,
+            new InMemoryCapabilityLeaseStore(),
             new InMemoryExecutionBudgetStore(
                 new ExecutionBudgetLimits(12, TimeSpan.FromMinutes(3))),
             new InMemoryContainmentControl(),

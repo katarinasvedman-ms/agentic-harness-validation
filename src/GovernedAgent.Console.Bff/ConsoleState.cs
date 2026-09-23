@@ -11,7 +11,10 @@ public sealed class ConsoleState(
     IConsoleWorkflowSnapshotProvider workflow,
     IApprovalStore approvals,
     IAuditChain audit,
+    ICapabilityLeaseStore capabilityLeases,
     IContainmentControl containmentControl,
+    IToolRegistry toolRegistry,
+    GovernedToolGateway gateway,
     ExecutionBudgetLimits limits,
     TimeProvider timeProvider)
 {
@@ -136,6 +139,75 @@ public sealed class ConsoleState(
             containmentControl.Reattestation,
             containmentControl.SignOff);
 
+    public CapabilityLeasesView GetCapabilityLeases() =>
+        new(
+            "Structured verified plan",
+            "Advisory only; prompts cannot grant access",
+            capabilityLeases.ReadAll(timeProvider.GetUtcNow())
+                .Select(ToView)
+                .ToArray());
+
+    public async ValueTask<GovernedExecutionView> ExecuteApprovedAsync(
+        string incidentId,
+        ExecutionMutation request,
+        DemoIdentity identity,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(identity);
+        ValidateRequired(request.ApprovalNonce, nameof(request.ApprovalNonce), 200);
+
+        var snapshot = workflow.GetSnapshot(incidentId);
+        var plan = snapshot.Verification.Plan;
+        var step = plan.Steps.Single();
+        if (!toolRegistry.TryGet(step.Tool, out var tool))
+        {
+            throw new InvalidOperationException(
+                $"Required console workflow tool '{step.Tool}' is not registered.");
+        }
+
+        var envelope = new TrustedActionEnvelope(
+            "1.0",
+            Guid.NewGuid(),
+            timeProvider.GetUtcNow(),
+            new UserIdentity(identity.Id, identity.Roles.Order(StringComparer.Ordinal).ToArray()),
+            new AgentIdentity(plan.AgentId, "local-demo-agent-identity", plan.DeploymentVersion),
+            new SessionIdentity($"console:{incidentId}", incidentId),
+            new GovernedAction(
+                plan.PlanId,
+                step.StepId,
+                tool.Name,
+                tool.Intent,
+                tool.Capability,
+                tool.Effect,
+                new ActionResource(step.Resource.Id, step.Resource.Environment),
+                snapshot.ActionDigest),
+            new VerificationAttestation(
+                snapshot.Verification.Result,
+                snapshot.Verification.SpecificationVersion,
+                snapshot.Verification.VerifierVersion,
+                snapshot.Verification.PlanDigest));
+        var expectedVersion = simulator.GetServiceHealth(step.Resource.Id).Version;
+        var result = await gateway.ExecuteAsync(
+            new GovernedToolRequest(
+                plan,
+                step.StepId,
+                envelope,
+                request.ApprovalNonce,
+                $"console:{incidentId}:{request.ApprovalNonce}",
+                expectedVersion),
+            cancellationToken);
+        var lease = result.CapabilityLease ??
+            throw new InvalidOperationException(
+                "Executed gateway result did not include a capability lease.");
+        return new GovernedExecutionView(
+            result.Outcome,
+            result.PolicyDecision.Decision,
+            result.ActionDigest,
+            result.ToolResult,
+            ToView(lease));
+    }
+
     public ControlsView SetContainment(
         bool active,
         string reason,
@@ -152,6 +224,22 @@ public sealed class ConsoleState(
         lock (_sync)
         {
             containmentControl.Contain();
+            var snapshot = workflow.GetSnapshot(IncidentSimulator.DemoIncidentId);
+            var revokedLeases = capabilityLeases.RevokeAgent(
+                snapshot.Verification.Plan.AgentId,
+                reason);
+            foreach (var lease in revokedLeases)
+            {
+                AppendControlAudit(
+                    "lease.revoke",
+                    identity,
+                    $"{lease.LeaseId}:{reason}",
+                    GovernanceDecision.Deny,
+                    ExecutionState.Denied,
+                    VerificationResult.Verified,
+                    lease);
+            }
+
             AppendControlAudit(
                 "containment.activate",
                 identity,
@@ -276,6 +364,23 @@ public sealed class ConsoleState(
         GovernanceDecision decision,
         ExecutionState state,
         VerificationResult verification)
+        => AppendControlAudit(
+            stepId,
+            identity,
+            evidence,
+            decision,
+            state,
+            verification,
+            capabilityLease: null);
+
+    private void AppendControlAudit(
+        string stepId,
+        DemoIdentity identity,
+        string evidence,
+        GovernanceDecision decision,
+        ExecutionState state,
+        VerificationResult verification,
+        CapabilityLeaseArtifact? capabilityLease)
     {
         var snapshot = workflow.GetSnapshot(IncidentSimulator.DemoIncidentId);
         var digest = Convert.ToHexStringLower(
@@ -294,7 +399,9 @@ public sealed class ConsoleState(
             state,
             timeProvider.GetUtcNow(),
             null,
-            string.Empty));
+            string.Empty,
+            capabilityLease?.LeaseId,
+            capabilityLease?.State));
     }
 
     private static PendingApprovalView CreatePending(
@@ -314,6 +421,27 @@ public sealed class ConsoleState(
             snapshot.PolicyVersion,
             timeProvider.GetUtcNow().AddMinutes(15));
     }
+
+    private static CapabilityLeaseView ToView(CapabilityLeaseArtifact lease) =>
+        new(
+            lease.LeaseId,
+            lease.AgentId,
+            lease.SessionId,
+            lease.PlanId,
+            lease.StepId,
+            lease.ActionDigest,
+            lease.Intent,
+            lease.Capability,
+            lease.Tool,
+            lease.Effect,
+            lease.ResourceId,
+            lease.Environment,
+            lease.IssuedAt,
+            lease.ExpiresAt,
+            lease.MaximumUses,
+            lease.ConsumedUses,
+            lease.State,
+            lease.RevocationReason);
 
     private static void ValidateReason(string reason)
     {

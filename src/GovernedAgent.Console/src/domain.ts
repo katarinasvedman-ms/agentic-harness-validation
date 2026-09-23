@@ -7,6 +7,7 @@ export type EventKind =
   | 'recovery'
   | 'plan-verified'
   | 'approval'
+  | 'lease'
   | 'execution'
   | 'evidence'
 
@@ -78,11 +79,25 @@ export interface AuditEntry {
   previousDigest: string
 }
 
+export interface CapabilityLease {
+  id: string
+  intentSource: string
+  promptRole: string
+  intent: 'remediate'
+  scope: string
+  issuedAt: string
+  expiresAt: string
+  maximumUses: number
+  consumedUses: number
+  state: 'completed' | 'revoked' | 'expired'
+}
+
 export interface IncidentDemo {
   incident: Incident
   events: readonly AgentEvent[]
   checks: readonly VerificationCheck[]
   approval: Approval
+  capabilityLease: CapabilityLease
   policy: PolicyState
   audit: readonly AuditEntry[]
 }

@@ -36,8 +36,7 @@ The BFF has no separate readiness endpoint. A 200 `/health` plus a successful
 
 All BFF state is process-local and volatile. Reset restores `INC-1042`,
 degraded `payments-api-03`, version counters, pending approval, and containment
-mode.
-It does not erase the in-memory audit chain.
+mode. It does not erase the in-memory audit chain or capability-lease history.
 
 ```powershell
 $headers = @{
@@ -103,6 +102,21 @@ unexpired request. A decision removes the pending request; approval artifacts
 are digest-bound and single-use. Use the rehearsal script instead of manually
 copying nonces when demonstrating execution semantics.
 
+After an exact approval, the rehearsal calls the authenticated local execution
+endpoint. The gateway derives intent from the represented verified plan and
+trusted registry metadata, then issues, atomically consumes, and completes a
+single-use lease. Inspect the nonce-free operator view with:
+
+```powershell
+irm http://127.0.0.1:5072/api/capability-leases
+```
+
+The demonstrated production-write lease lasts 90 seconds and is bound to the
+user, agent, deployment, session, incident, plan, action digest, intent, tool,
+capability, effect, target, environment, policy, and verifier. It is an
+application-layer artifact, not an Entra token, Azure RBAC assignment, APIM
+credential, or downstream credential.
+
 ## Audit and evidence collection
 
 ```powershell
@@ -145,8 +159,9 @@ calculator/portal, record region, SKU, token volumes, run frequency, retention,
 currency, discounts, and a contingency factor. Do not extrapolate local timing
 as hosted capacity or reliability.
 
-Limitations: static console data is not live-bound to the BFF; stores are
-in-memory; local headers are not Entra authentication; simulator safety does
+Limitations: static console data is not live-bound to the BFF; stores,
+including the lease broker, are in-memory; local headers are not Entra
+authentication; simulator safety does
 not prove production API safety; egress/RBAC/durable audit and hosted
 child-process isolation are not exercised; model prose can still mislead;
 formal assurance is bounded by `docs/VERIFICATION_SPEC.md`.
